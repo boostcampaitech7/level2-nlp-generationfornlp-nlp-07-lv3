@@ -7,30 +7,12 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default='klue/bert-base'
+        default='beomi/gemma-ko-2b'
     )
     train_test_split: Optional[float] = field(
         default=0.3,
         metadata={
             "help": "test_size"
-        },
-    )
-    learning_rate: Optional[float] = field(
-        default=2e-5,
-        metadata={
-            "help": "The initial learning rate for training."
-        },
-    )
-    per_device_train_batch_size: Optional[int] = field(
-        default=32,
-        metadata={
-            "help": "The batch size per GPU/TPU core/CPU for training."
-        },
-    )
-    per_device_eval_batch_size: Optional[int] = field(
-        default=32,
-        metadata={
-            "help": "The batch size per GPU/TPU core/CPU for evaluation."
         },
     )
 
@@ -72,10 +54,6 @@ class DataTrainingArguments:
         metadata={
             "help": "The path of the data directory"
         },
-    )
-    train_learning_rate: float = field(
-        default=2e-5,
-        metadata={"help": "The initial learning rate for training"}
     )
 ##################################################################################################################
     overwrite_cache: bool = field(
