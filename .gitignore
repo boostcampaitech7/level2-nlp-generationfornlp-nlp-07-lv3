@@ -1,0 +1,9 @@
+.idea
+*.pyc
+__pycache__
+
+code
+data
+models
+output
+test
