@@ -1,8 +1,8 @@
 .idea
 *.pyc
 __pycache__
-
-
+wandb
+src/wandb
 
 code
 data/*
