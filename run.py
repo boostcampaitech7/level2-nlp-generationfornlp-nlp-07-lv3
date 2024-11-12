@@ -10,6 +10,7 @@ current_time_str = current_time.strftime('%Y%m%d_%H%M%S')
 
 # Root directory (adjust this if necessary)
 root_dir = os.getcwd()
+os.makedirs('data', exist_ok=True)
 os.makedirs('models', exist_ok=True)
 os.makedirs('output', exist_ok=True)
 
@@ -49,11 +50,12 @@ subprocess.run([
 ], check=True)
 
 # Perform prediction (inference)
-# subprocess.run([
-#     "python", "main.py",
-#     "--output_dir", predict_dir,
-#     "--test_dataset_name", predict_dataset_name,
-#     "--model_name_or_path", train_dir,
-#     "--do_predict",
-#     "--run_name", run_name,
-# ], check=True)
+#train_dir = "/data/ephemeral/home/jungmin_test/level2-nlp-generationfornlp-nlp-07-lv3/models/train_Test0_20241112_181826"
+subprocess.run([
+    "python", "main.py",
+    "--output_dir", predict_dir,
+    "--test_dataset_name", predict_dataset_name,
+    "--model_name_or_path", train_dir,
+    "--do_predict",
+    "--run_name", run_name,
+], check=True)

@@ -9,7 +9,8 @@ import wandb
 import transformers
 from ast import literal_eval
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, HfArgumentParser, TrainingArguments, Trainer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, HfArgumentParser, TrainingArguments, \
+    Trainer
 from datasets import Dataset
 import json
 import pandas as pd
@@ -54,6 +55,7 @@ PROMPT_QUESTION_PLUS = """지문:
 1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
 정답:"""
 
+
 def set_seed(seed: int = 456):
     random.seed(seed)
     np.random.seed(seed)
@@ -63,6 +65,7 @@ def set_seed(seed: int = 456):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True)
+
 
 def record_to_df(dataset):
     records = []
@@ -83,7 +86,8 @@ def record_to_df(dataset):
 
     return pd.DataFrame(records)
 
-def df_to_process_df(dataset):
+
+def train_df_to_process_df(dataset):
     processed_dataset = []
     for i in range(len(dataset)):
         choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(dataset[i]["choices"])])
@@ -118,6 +122,44 @@ def df_to_process_df(dataset):
         )
 
     return Dataset.from_pandas(pd.DataFrame(processed_dataset))
+
+
+def test_df_to_process_df(dataset):
+    test_dataset = []
+    for i, row in dataset.iterrows():
+        choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(row["choices"])])
+        len_choices = len(row["choices"])
+
+        # <보기>가 있을 때
+        if row["question_plus"]:
+            user_message = PROMPT_QUESTION_PLUS.format(
+                paragraph=row["paragraph"],
+                question=row["question"],
+                question_plus=row["question_plus"],
+                choices=choices_string,
+            )
+        # <보기>가 없을 때
+        else:
+            user_message = PROMPT_NO_QUESTION_PLUS.format(
+                paragraph=row["paragraph"],
+                question=row["question"],
+                choices=choices_string,
+            )
+
+        test_dataset.append(
+            {
+                "id": row["id"],
+                "messages": [
+                    {"role": "system", "content": "지문을 읽고 질문의 답을 구하세요."},
+                    {"role": "user", "content": user_message},
+                ],
+                "label": row["answer"],
+                "len_choices": len_choices,
+            }
+        )
+
+    return test_dataset
+
 
 SEED = 2024
 set_seed(SEED)
@@ -168,10 +210,10 @@ def main(run_name, debug=False):
         trust_remote_code=True,
     ) if train_args.do_train else (
         AutoPeftModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-    ))
+            model_name,
+            torch_dtype=torch.float16,
+            trust_remote_code=True,
+        ))
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
@@ -190,7 +232,7 @@ def main(run_name, debug=False):
     )
 
     dataset = Dataset.from_pandas(df)
-    processed_dataset = df_to_process_df(dataset)
+    processed_dataset = train_df_to_process_df(dataset)
 
     def formatting_prompts_func(example):
         output_texts = []
@@ -253,25 +295,21 @@ def main(run_name, debug=False):
     acc_metric = evaluate.load("accuracy")
 
     # 정답 토큰 매핑
-    #int_output_map = {"1": 0, "2": 1, "3": 2, "4": 3, "5": 4}
+    # int_output_map = {"1": 0, "2": 1, "3": 2, "4": 3, "5": 4}
 
     # metric 계산 함수
     def compute_metrics(evaluation_result):
         logits, labels = evaluation_result
-
 
         # 토큰화된 레이블 디코딩
         labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
         labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
         labels = list(map(lambda x: x.split("<end_of_turn>")[0].strip(), labels))
         # 실제 지문은 1에서 시작, 인덱스는 0부터 시작하므로
-        labels = list(map(lambda x: int(x)-1, labels))
+        labels = list(map(lambda x: int(x) - 1, labels))
 
         # 소프트맥스 함수를 사용하여 로그트 변환
-        probs = torch.nn.functional.softmax(torch.tensor(logits), dim=-1)
-        # logits = logits.cpu().numpy() if isinstance(logits, torch.Tensor) else logits
-        # probs = torch.nn.functional.softmax(logits.float().cpu(), dim=-1).half().to('cuda')
-
+        probs = torch.nn.functional.softmax(torch.FloatTensor(logits), dim=-1)
         predictions = np.argmax(probs, axis=-1)
 
         # 정확도 계산
@@ -283,80 +321,84 @@ def main(run_name, debug=False):
     tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.padding_side = 'right'
 
-    if train_args.do_train:
-        sft_config = SFTConfig(
-            output_dir=train_args.output_dir,
-            do_train=True,
-            do_eval=True,
-            lr_scheduler_type="cosine",
-            max_seq_length=1024,
-            per_device_train_batch_size=1,
-            per_device_eval_batch_size=1,
-            num_train_epochs=3,
-            learning_rate=2e-5,
-            weight_decay=0.01,
-            logging_steps=200,
-            save_strategy="epoch",
-            eval_strategy="epoch",
-            save_total_limit=2,
-            save_only_model=True,
-            report_to="none",
-        )
+    try:
+        if train_args.do_train:
+            sft_config = SFTConfig(
+                output_dir=train_args.output_dir,
+                do_train=True,
+                do_eval=True,
+                lr_scheduler_type="cosine",
+                max_seq_length=1024,
+                per_device_train_batch_size=1,
+                per_device_eval_batch_size=1,
+                num_train_epochs=3,
+                learning_rate=2e-5,
+                weight_decay=0.01,
+                logging_steps=200,
+                save_strategy="epoch",
+                eval_strategy="epoch",
+                save_total_limit=1,
+                save_only_model=True,
+                report_to="none",
+            )
 
-        trainer = SFTTrainer(
-            model=model,
-            train_dataset=train_dataset,
-            eval_dataset=eval_dataset,
-            data_collator=data_collator,
-            tokenizer=tokenizer,
-            compute_metrics=compute_metrics,
-            preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-            peft_config=peft_config,
-            args=sft_config,
-        )
+            trainer = SFTTrainer(
+                model=model,
+                train_dataset=train_dataset,
+                eval_dataset=eval_dataset,
+                data_collator=data_collator,
+                tokenizer=tokenizer,
+                compute_metrics=compute_metrics,
+                preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+                peft_config=peft_config,
+                args=sft_config,
+            )
 
-        trainer.train()
+            trainer.train()
 
-    if train_args.do_predict:
-        test_df = pd.read_csv(data_args.test_dataset_name)
-        test_df = record_to_df(test_df)
-        test_dataset = df_to_process_df(test_df)
+        if train_args.do_predict:
+            test_df = pd.read_csv(data_args.test_dataset_name)
+            test_df = record_to_df(test_df)
+            test_dataset = test_df_to_process_df(test_df)
 
-        infer_results = []
-        pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
+            infer_results = []
+            pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
 
-        model.eval()
-        with torch.inference_mode():
-            for data in tqdm(test_dataset):
-                _id = data["id"]
-                messages = data["messages"]
-                len_choices = data["len_choices"]
+            model.to('cuda')
+            model.eval()
+            with torch.inference_mode():
+                for data in tqdm(test_dataset):
+                    _id = data["id"]
+                    messages = data["messages"]
+                    len_choices = data["len_choices"]
 
-                outputs = model(
-                    tokenizer.apply_chat_template(
-                        messages,
-                        tokenize=True,
-                        add_generation_prompt=True,
-                        return_tensors="pt",
-                    ).to("cuda")
-                )
+                    outputs = model(
+                        tokenizer.apply_chat_template(
+                            messages,
+                            tokenize=True,
+                            add_generation_prompt=True,
+                            return_tensors="pt",
+                        ).to("cuda")
+                    )
 
-                logits = outputs.logits[:, -1].flatten().cpu()
+                    logits = outputs.logits[:, -1].flatten().cpu()
 
-                target_logit_list = [logits[tokenizer.vocab[str(i + 1)]] for i in range(len_choices)]
+                    target_logit_list = [logits[tokenizer.vocab[str(i + 1)]] for i in range(len_choices)]
 
-                probs = (
-                    torch.nn.functional.softmax(
-                        torch.tensor(target_logit_list, dtype=torch.float32)
-                    ).detach().cpu().numpy()
-                )
+                    probs = (
+                        torch.nn.functional.softmax(torch.tensor(target_logit_list, dtype=torch.float32), dim=-1).detach().cpu().numpy()
+                    )
 
-                predict_value = pred_choices_map[np.argmax(probs, axis=-1)]
-                infer_results.append({"id": _id, "answer": predict_value})
+                    predict_value = pred_choices_map[np.argmax(probs, axis=-1)]
+                    infer_results.append({"id": _id, "answer": predict_value})
 
-        pd.DataFrame(infer_results).to_csv(train_args.output_dir, index=False)
-        print(pd.DataFrame(infer_results))
+            pd.DataFrame(infer_results).to_csv(train_args.output_dir, index=False)
+            print(pd.DataFrame(infer_results))
 
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        torch.cuda.empty_cache()
+        raise e
 
 
 if __name__ == '__main__':

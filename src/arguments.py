@@ -1,6 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+import os
+parent_dir = os.path.dirname(os.getcwd())
+data_dir = os.path.join(parent_dir, 'data')
+output_dir = os.path.join(parent_dir, 'output')
+
 @dataclass
 class ModelArguments:
     """
@@ -23,19 +28,19 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     dataset_name: Optional[str] = field(
-        default="../data/train.csv",
+        default=os.path.join(data_dir, 'train.csv'),
         metadata={
             "help": "The name of the dataset to use."
         },
     )
     test_dataset_name: Optional[str] = field(
-        default="../data/test.csv",
+        default=os.path.join(data_dir, 'test.csv'),
         metadata={
             "help": "The name of the dataset to use."
         },
     )
     max_seq_length: int = field(
-        default=512,
+        default=1024,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
@@ -47,24 +52,5 @@ class DataTrainingArguments:
             "help": "Whether to pad all samples to `max_seq_length`. "
             "If False, will pad the samples dynamically when batching to the maximum length in the batch (which can "
             "be faster on GPU but will be slower on TPU)."
-        },
-    )
-    data_path: str = field(
-        default="../data/",
-        metadata={
-            "help": "The path of the data directory"
-        },
-    )
-##################################################################################################################
-    overwrite_cache: bool = field(
-        default=False,
-        metadata={
-            "help": "Overwrite the cached training and evaluation sets"
-        },
-    )
-    preprocessing_num_workers: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": "The number of processes to use for the preprocessing."
         },
     )
