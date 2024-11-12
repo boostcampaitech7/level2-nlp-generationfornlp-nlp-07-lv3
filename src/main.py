@@ -20,7 +20,7 @@ from arguments import ModelArguments, DataTrainingArguments
 
 
 pd.set_option('display.max_columns', None)
-os.environ["WANDB_MODE"] = "online"
+os.environ["WANDB_MODE"] = "offline"
 logger = logging.getLogger(__name__)
 
 PROMPT_NO_QUESTION_PLUS = """지문:
@@ -166,13 +166,13 @@ def main(run_name, debug=False):
     model_args, data_args, train_args = parser.parse_args_into_dataclasses()
     model_name = None
 
-    project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
-    wandb.init(
-        project="CSAT-Solver",
-        entity="nlp07",
-        name=f"{project_prefix}_{run_name}",
-        save_code=True,
-    )
+    # project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
+    # wandb.init(
+    #     project="CSAT-Solver",
+    #     entity="nlp07",
+    #     name=f"{project_prefix}_{run_name}",
+    #     save_code=True,
+    # )
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
@@ -386,6 +386,7 @@ def main(run_name, debug=False):
                     predict_value = pred_choices_map[np.argmax(probs, axis=-1)]
                     infer_results.append({"id": _id, "answer": predict_value})
 
+            os.makedirs(train_args.output_dir, exist_ok=True)
             pd.DataFrame(infer_results).to_csv(os.path.join(train_args.output_dir, 'predictions.csv'), index=False)
             print(pd.DataFrame(infer_results))
 
@@ -405,4 +406,4 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name)
+    main(argv_run_name, debug=True)
