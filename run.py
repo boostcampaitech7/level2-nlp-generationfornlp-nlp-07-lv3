@@ -43,9 +43,6 @@ subprocess.run([
     "--do_train",
     "--do_eval",
     "--overwrite_output_dir",
-    "--learning_rate", "2e-5",
-    "--per_device_train_batch_size", "32",
-    "--per_device_eval_batch_size", "32",
     "--run_name", run_name,
 ], check=True)
 

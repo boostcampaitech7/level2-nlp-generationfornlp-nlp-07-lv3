@@ -408,4 +408,4 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name, debug=True)
+    main(argv_run_name)
