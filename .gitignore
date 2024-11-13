@@ -1,0 +1,14 @@
+.idea
+*.pyc
+__pycache__
+wandb
+src/wandb
+
+code
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
+output/*
+!output/.gitkeep
+test
