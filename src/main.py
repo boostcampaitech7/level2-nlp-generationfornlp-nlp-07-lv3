@@ -51,7 +51,7 @@ PROMPT_QUESTION_PLUS = """지문:
 정답:"""
 
 
-def set_seed(seed: int = 456):
+def set_seed(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -288,9 +288,6 @@ def main(run_name, debug=False):
     # metric 로드
     acc_metric = evaluate.load("accuracy")
 
-    # 정답 토큰 매핑
-    # int_output_map = {"1": 0, "2": 1, "3": 2, "4": 3, "5": 4}
-
     # metric 계산 함수
     def compute_metrics(evaluation_result):
         logits, labels = evaluation_result
@@ -393,8 +390,12 @@ def main(run_name, debug=False):
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        torch.cuda.empty_cache()
         raise e
+
+    finally:
+        torch.cuda.empty_cache()
+
+    return
 
 
 if __name__ == '__main__':
