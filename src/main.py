@@ -332,7 +332,7 @@ def main(run_name, debug=False):
                 eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
-                report_to="none",
+                report_to="wandb",
             )
 
             trainer = SFTTrainer(
