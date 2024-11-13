@@ -264,7 +264,8 @@ def main(run_name, debug=False):
     # 데이터 분리
     # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다.
     # 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
-    tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= 1024)
+    mex_seq_len = data_args.max_seq_length
+    tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= mex_seq_len)
     tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.1, seed=42)
 
     train_dataset = tokenized_dataset['train']
@@ -321,7 +322,7 @@ def main(run_name, debug=False):
                 do_train=True,
                 do_eval=True,
                 lr_scheduler_type="cosine",
-                max_seq_length=1024,
+                max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
                 num_train_epochs=3,
