@@ -20,7 +20,7 @@ from arguments import ModelArguments, DataTrainingArguments
 
 
 pd.set_option('display.max_columns', None)
-os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_MODE"] = "online"
 logger = logging.getLogger(__name__)
 
 PROMPT_NO_QUESTION_PLUS = """지문:
@@ -166,13 +166,13 @@ def main(run_name, debug=False):
     model_args, data_args, train_args = parser.parse_args_into_dataclasses()
     model_name = None
 
-    # project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
-    # wandb.init(
-    #     project="CSAT-Solver",
-    #     entity="nlp07",
-    #     name=f"{project_prefix}_{run_name}",
-    #     save_code=True,
-    # )
+    project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
+    wandb.init(
+        project="CSAT-Solver",
+        entity="NotyNoty",
+        name=f"{project_prefix}_{run_name}",
+        save_code=True,
+    )
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
