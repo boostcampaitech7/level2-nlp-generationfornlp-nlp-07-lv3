@@ -13,7 +13,8 @@ model_name = 'LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct'
 length = 512
 
 parent_dir = os.path.dirname(os.getcwd())
-dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_5.csv'))
+#dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_5.csv'))
+dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_1024.csv'))
 dataset = dataset.sample(frac=1).reset_index(drop=True)
 
 sample = dataset.iloc[0]
