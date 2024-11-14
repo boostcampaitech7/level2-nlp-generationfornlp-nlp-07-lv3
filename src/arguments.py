@@ -17,7 +17,7 @@ class ModelArguments:
         default='LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct',
     )
     train_test_split: Optional[float] = field(
-        default=0.3,
+        default=0.2,
         metadata={
             "help": "test_size"
         },
@@ -42,7 +42,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=768,
+        default=512,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
