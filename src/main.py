@@ -12,7 +12,7 @@ import evaluate
 
 from ast import literal_eval
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, AutoConfig
 from datasets import Dataset
 from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM, LoraConfig
@@ -196,10 +196,15 @@ def main(run_name, debug=False):
     dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
 
     df = record_to_df(dataset)
+    quantization_config = AutoConfig.from_pretrained(
+        model_name,
+        torch_dtype=torch.float16,
+        trust_remote_code=True,
+    )
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype=torch.float16,
+        #torch_dtype=torch.float16,
         trust_remote_code=True,
     ) if train_args.do_train else (
         AutoPeftModelForCausalLM.from_pretrained(
@@ -325,12 +330,12 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=3,
+                num_train_epochs=10,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
                 save_strategy="epoch",
-                eval_strategy="epoch",
+                #eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
                 report_to="wandb",

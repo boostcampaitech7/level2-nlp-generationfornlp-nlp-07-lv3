@@ -24,7 +24,7 @@ parent_dir = os.path.dirname(os.getcwd())
 #dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_5.csv'))
 #dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_1024.csv'))
 #dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train.csv'))
-dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_512_all.csv'))
+dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_550_all.csv'))
 
 
 def sperate_dataset(dataset : pd.DataFrame, length=length):
@@ -45,10 +45,10 @@ def get_llm_output(data_row, tokenizer, model, length=length):
     messages = [
         {
             'role': 'system',
-            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 {length}자 이하의 문서로 요약하세요. 요약한 문서로도 문제를 풀 수 있어야 합니다.'
+            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 한글 {length} 글자로 요약하세요. 요약한 문서로도 문제를 풀 수 있어야 합니다. 요약된 내용만 출력하세요.'
                        f'문서 : {paragraph}'
                        f'문제 : {question}'
-                       f'정답 후보 : {choices}'
+                       f'Choice : {choices}'
         },
         {
             'role': 'user',
@@ -75,33 +75,6 @@ def get_llm_output(data_row, tokenizer, model, length=length):
     return output
 
 
-def run_llm(dataset : pd.DataFrame, save_every=50):
-    longer, shorter = sperate_dataset(dataset)
-
-    # tokenizer = AutoTokenizer.from_pretrained(model_name)
-    # model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, trust_remote_code=True).to(
-    #     'cuda')
-
-    for i in tqdm(range(0, len(longer))):
-        before = len(longer.iloc[i]['paragraph'])
-        #longer.loc[i, 'paragraph'] = get_llm_output(longer.iloc[i], tokenizer, model)
-        output = run_perplexity(longer.iloc[i])
-        longer.loc[i, 'paragraph'] = output
-
-        after = len(longer.iloc[i]['paragraph'])
-
-        print(f'Before : {before} / After : {after}')
-
-        if i % save_every == 0:
-            dataset = pd.concat([longer, shorter])
-            #dataset = dataset.apply(lambda x: len(x['paragraph']) <= length, axis=1)
-            dataset.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
-
-    # concat and sort by length desc then save
-    dataset = pd.concat([longer, shorter])
-    #dataset = dataset.apply(lambda x : len(x['paragraph']) <= length, axis=1)
-    dataset.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
-
 def run_perplexity(data_row, length=length):
     paragraph = data_row['paragraph']
 
@@ -117,16 +90,17 @@ def run_perplexity(data_row, length=length):
     messages = [
         {
             'role': 'system',
-            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 {length}글자 이하로 요약하세요. 요약한 문서로도 문제를 풀 수 있어야 합니다.'
+            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 한글 {length} 글자로 요약하세요. 요약한 문서로도 문제를 풀 수 있어야 합니다. 설명 출력하지 마세요.'
                        f'문서 : {paragraph}'
                        f'문제 : {question}'
-                       f'정답 후보 : {choices}'
+                       f'Choice : {choices}'
         },
         {
             'role': 'user',
-            'content': f'요약 : '
+            'content': '요약 : '
         }
     ]
+    
     # API 호출 및 응답 받기
     response = client.chat.completions.create(
         model="llama-3.1-sonar-large-128k-online",
@@ -138,6 +112,36 @@ def run_perplexity(data_row, length=length):
     output = output.replace('\n', ' ')
 
     return output
+
+
+def run_llm(dataset : pd.DataFrame, save_every=50):
+    longer, shorter = sperate_dataset(dataset)
+    new_df = pd.DataFrame(columns=['id', 'paragraph', 'problems', 'question_plus'])
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, trust_remote_code=True).to(
+        'cuda')
+
+    for i in tqdm(range(0, len(longer))):
+        before = len(longer.iloc[i]['paragraph'])
+        #output = run_perplexity(longer.iloc[i])
+        output = get_llm_output(longer.iloc[i], tokenizer, model)
+        after = len(output)
+
+        if before < after:
+            # drop this row
+            longer = longer.drop(i)
+            continue
+
+        new_df = new_df.append({'id': longer.iloc[i]['id'], 'paragraph': output, 'problems': longer.iloc[i]['problems'], 'question_plus': longer.iloc[i]['question_plus']}, ignore_index=True)
+        print(f'Before : {before} / After : {after}')
+
+        if i % save_every == 0:
+            new_df.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
+
+    # concat and sort by length desc then save
+    new_df.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
+
 
 if __name__ == '__main__':
     run_llm(dataset)

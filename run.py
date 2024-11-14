@@ -43,19 +43,16 @@ subprocess.run([
     "--do_train",
     "--do_eval",
     "--overwrite_output_dir",
-    "--learning_rate", "2e-5",
-    "--per_device_train_batch_size", "32",
-    "--per_device_eval_batch_size", "32",
     "--run_name", run_name,
 ], check=True)
 
 # Perform prediction (inference)
 #train_dir = "/data/ephemeral/home/jungmin_test/level2-nlp-generationfornlp-nlp-07-lv3/models/train_Test0_20241112_181826"
-# subprocess.run([
-#     "python", "main.py",
-#     "--output_dir", predict_dir,
-#     "--test_dataset_name", predict_dataset_name,
-#     "--model_name_or_path", train_dir,
-#     "--do_predict",
-#     "--run_name", run_name,
-# ], check=True)
+subprocess.run([
+    "python", "main.py",
+    "--output_dir", predict_dir,
+    "--test_dataset_name", predict_dataset_name,
+    "--model_name_or_path", train_dir,
+    "--do_predict",
+    "--run_name", run_name,
+], check=True)
