@@ -16,15 +16,15 @@ client = OpenAI(api_key=API_KEY, base_url="https://api.perplexity.ai")
 
 model_name = 'CohereForAI/aya-expanse-8b'
 model_name = 'LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct'
-#save_name = model_name.split('/')[1] + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
-save_name = "perplexity" + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
+save_name = model_name.split('/')[1] + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
+#save_name = "perplexity" + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
 length = 550
 
 parent_dir = os.path.dirname(os.getcwd())
 #dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_5.csv'))
 #dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_1024.csv'))
 #dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train.csv'))
-dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_550_all.csv'))
+dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_longer_then_512_tokens.csv'))
 
 
 def sperate_dataset(dataset : pd.DataFrame, length=length):
@@ -45,14 +45,12 @@ def get_llm_output(data_row, tokenizer, model, length=length):
     messages = [
         {
             'role': 'system',
-            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 한글 {length} 글자로 요약하세요. 요약한 문서로도 문제를 풀 수 있어야 합니다. 요약된 내용만 출력하세요.'
-                       f'문서 : {paragraph}'
-                       f'문제 : {question}'
-                       f'Choice : {choices}'
+            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 주어진 문제를 풀 수 있는 수준으로 요약하세요. {length}자로 요약하세요. 문서만 출력하세요.'
+
         },
         {
             'role': 'user',
-            'content': '요약 내용 : '
+            'content': f'\n\n문서 : {paragraph}\n\n문제 : {question}\n\nChoice : {choices}\n\n요약 : '
         }
     ]
 
@@ -61,7 +59,7 @@ def get_llm_output(data_row, tokenizer, model, length=length):
         input_ids.to('cuda'),
         max_new_tokens=int(length * 1.5),
         do_sample=True,
-        temperature=0.7,
+        temperature=0.3,
         )
     gen_text = tokenizer.decode(gen_tokens[0])
 
@@ -71,8 +69,13 @@ def get_llm_output(data_row, tokenizer, model, length=length):
     trim_end_index = trim_0.find('[|endofturn|]')
     trim_1 = trim_0[:trim_end_index]
 
-    output = trim_1.replace('\n', ' ')
-    return output
+    output = trim_1.split('\n\n')
+    trim_2 = ''.join(output[:-1])
+
+    if '문제:' in trim_2:
+        trim_2 = trim_2.split('문제:')[0]
+
+    return trim_2
 
 
 def run_perplexity(data_row, length=length):
@@ -114,7 +117,7 @@ def run_perplexity(data_row, length=length):
     return output
 
 
-def run_llm(dataset : pd.DataFrame, save_every=50):
+def run_llm(dataset : pd.DataFrame, save_every=25):
     longer, shorter = sperate_dataset(dataset)
     new_df = pd.DataFrame(columns=['id', 'paragraph', 'problems', 'question_plus'])
 
@@ -133,7 +136,7 @@ def run_llm(dataset : pd.DataFrame, save_every=50):
             longer = longer.drop(i)
             continue
 
-        new_df = new_df.append({'id': longer.iloc[i]['id'], 'paragraph': output, 'problems': longer.iloc[i]['problems'], 'question_plus': longer.iloc[i]['question_plus']}, ignore_index=True)
+        new_df = pd.concat([new_df, pd.DataFrame([[longer.iloc[i]['id'], output, longer.iloc[i]['problems'], longer.iloc[i]['question_plus']]], columns=new_df.columns)])
         print(f'Before : {before} / After : {after}')
 
         if i % save_every == 0:
