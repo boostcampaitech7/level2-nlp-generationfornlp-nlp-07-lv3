@@ -12,12 +12,12 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        #default='beomi/gemma-ko-2b'
+        default='beomi/gemma-ko-2b'
         #default='CohereForAI/aya-expanse-32b',
-        default='LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct',
+        #default='LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct',
     )
     train_test_split: Optional[float] = field(
-        default=0.2,
+        default=0.1,
         metadata={
             "help": "test_size"
         },

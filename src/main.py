@@ -12,7 +12,7 @@ import evaluate
 
 from ast import literal_eval
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, AutoConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments
 from datasets import Dataset
 from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM, LoraConfig
@@ -51,7 +51,7 @@ PROMPT_QUESTION_PLUS = """지문:
 정답:"""
 
 
-def set_seed(seed: int = 456):
+def set_seed(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -196,15 +196,10 @@ def main(run_name, debug=False):
     dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
 
     df = record_to_df(dataset)
-    quantization_config = AutoConfig.from_pretrained(
-        model_name,
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-    )
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        #torch_dtype=torch.float16,
+        torch_dtype=torch.float16,
         trust_remote_code=True,
     ) if train_args.do_train else (
         AutoPeftModelForCausalLM.from_pretrained(
@@ -231,6 +226,9 @@ def main(run_name, debug=False):
 
     dataset = Dataset.from_pandas(df)
     processed_dataset = train_df_to_process_df(dataset)
+
+    # parent_dir = os.path.dirname(os.getcwd())
+    # processed_dataset.to_csv(os.path.join(parent_dir, 'data', 'processed_dataset.csv'))
 
     def formatting_prompts_func(example):
         output_texts = []
@@ -271,7 +269,7 @@ def main(run_name, debug=False):
     # 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
     mex_seq_len = data_args.max_seq_length
     tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= mex_seq_len)
-    tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.1, seed=42)
+    tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.1, seed=SEED)
 
     train_dataset = tokenized_dataset['train']
     eval_dataset = tokenized_dataset['test']
@@ -292,9 +290,6 @@ def main(run_name, debug=False):
 
     # metric 로드
     acc_metric = evaluate.load("accuracy")
-
-    # 정답 토큰 매핑
-    # int_output_map = {"1": 0, "2": 1, "3": 2, "4": 3, "5": 4}
 
     # metric 계산 함수
     def compute_metrics(evaluation_result):
@@ -330,7 +325,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=10,
+                num_train_epochs=6,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -398,8 +393,12 @@ def main(run_name, debug=False):
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        torch.cuda.empty_cache()
         raise e
+
+    finally:
+        torch.cuda.empty_cache()
+
+    return
 
 
 if __name__ == '__main__':
