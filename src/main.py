@@ -156,50 +156,38 @@ def main(run_name, debug=False):
     logging.info(f"model is from {model_args.model_name_or_path}")
     logging.info(f"data is from {data_args.dataset_name}")
 
-    # Load model
-    if train_args.do_train:
-        model_name = model_args.model_name_or_path
-
-    if not train_args.do_train:
-        latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
-        model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
-
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
     dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
     df = record_to_df(dataset)
 
     quant = custom_args.quantization
-    use_quant = True
+    quant_config = None
 
     if quant == 4:
-        quant_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.float16,
-        )
+        quant_config = custom_args.quant_4_bit_config
 
     elif quant == 8:
-        quant_config = BitsAndBytesConfig(
-            load_in_8bit=True,
+        quant_config = custom_args.quant_8_bit_config
+
+    # Load model
+    if train_args.do_train:
+        model_name = model_args.model_name_or_path
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            trust_remote_code=True,
+            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
 
-    else:
-        quant_config = None
-        use_quant = False
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=torch.float16 if not use_quant else None,
-        trust_remote_code=True,
-        quantization_config=quant_config if use_quant else None,
-    ) if train_args.do_train else (
-        AutoPeftModelForCausalLM.from_pretrained(
+    if not train_args.do_train:
+        latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
+        model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
+        model = AutoPeftModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=torch.float16,
             trust_remote_code=True,
-        ))
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
@@ -207,15 +195,7 @@ def main(run_name, debug=False):
     )
 
     tokenizer.chat_template = custom_args.chat_template
-
-    peft_config = LoraConfig(
-        r=6,
-        lora_alpha=8,
-        lora_dropout=0.05,
-        target_modules=['q_proj', 'k_proj'],
-        bias="none",
-        task_type="CAUSAL_LM",
-    )
+    peft_config = custom_args.peft_config
 
     dataset = Dataset.from_pandas(df)
     processed_dataset = train_df_to_process_df(dataset, plus_prompt, no_plus_prompt)
@@ -254,9 +234,7 @@ def main(run_name, debug=False):
         desc="Tokenizing",
     )
 
-    # 데이터 분리
-    # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다.
-    # 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
+    # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
     mex_seq_len = data_args.max_seq_length
     tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= mex_seq_len)
     tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.1, seed=42)
@@ -320,7 +298,7 @@ def main(run_name, debug=False):
                 weight_decay=0.01,
                 logging_steps=200,
                 save_strategy="epoch",
-                #eval_strategy="epoch",
+                eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
                 report_to="wandb",
@@ -337,7 +315,6 @@ def main(run_name, debug=False):
                 peft_config=peft_config,
                 args=sft_config,
             )
-
             trainer.train()
 
         if train_args.do_predict:

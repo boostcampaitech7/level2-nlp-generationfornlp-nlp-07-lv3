@@ -1,7 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Optional
+from peft import LoraConfig
+from transformers import BitsAndBytesConfig
 
 import os
+import torch
 parent_dir = os.path.dirname(os.getcwd())
 data_dir = os.path.join(parent_dir, 'data')
 output_dir = os.path.join(parent_dir, 'output')
@@ -28,7 +31,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     dataset_name: Optional[str] = field(
-        #default=os.path.join(data_dir, 'train.csv'),
+        default=os.path.join(data_dir, 'train_sample_5.csv'),
         metadata={
             "help": "The name of the dataset to use."
         },
@@ -69,21 +72,53 @@ class CustomArguments:
             "help": "Chat template"
         },
     )
-    prompt_question_plus : str = field(
+    prompt_question_plus : Optional[str] = field(
         default="지문:\n{paragraph}\n\n질문:\n{question}\n\n<보기>:\n{question_plus}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
         metadata={
             "help": "Prompt question plus"
         },
     )
-    prompt_no_question_plus : str = field(
+    prompt_no_question_plus : Optional[str] = field(
         default="지문:\n{paragraph}\n\n질문:\n{question}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
         metadata={
             "help": "Prompt no question plus"
         },
     )
-    response_template : str = field(
+    response_template : Optional[str] = field(
         default="<start_of_turn>model",
         metadata={
             "help": "Response template"
+        },
+    )
+    peft_config : Optional[LoraConfig] = field(
+        default=LoraConfig(
+            r=6,
+            lora_alpha=8,
+            lora_dropout=0.05,
+            target_modules=['q_proj', 'k_proj'],
+            bias="none",
+            task_type="CAUSAL_LM",
+        ),
+        metadata={
+            "help": "PEFT Config"
+        },
+    )
+    quant_4_bit_config : Optional[BitsAndBytesConfig] = field(
+        default=BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16,
+        ),
+        metadata={
+            "help": "Quant 4 bit config"
+        },
+    )
+    quant_8_bit_config : Optional[BitsAndBytesConfig] = field(
+        default=BitsAndBytesConfig(
+            load_in_8bit=True,
+        ),
+        metadata={
+            "help": "Quant 8 bit config"
         },
     )
