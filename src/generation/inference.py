@@ -5,6 +5,7 @@ import pandas as pd
 import csv
 from tqdm import tqdm
 import torch
+import gc
 
 # 기본 디바이스 설정
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -51,6 +52,7 @@ def generate_valid_answer(model, tokenizer, inputs, generation_config):
     
     while True:
         with torch.no_grad():
+            print('지금 들어가는 토큰 수:', len(inputs['input_ids'][0]))
             outputs = model.generate(
                 inputs['input_ids'],
                 **generation_config
@@ -80,9 +82,18 @@ generation_config = {
     "eos_token_id": tokenizer.eos_token_id
 }
 
+# 메모리 정리 함수
+def clear_memory():
+    gc.collect()
+    torch.cuda.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+
+
+
 # 각 메시지에 대해 생성 수행
 for formatted_msg, id_ in tqdm(result):
-    # 토크나이징
+    clear_memory()
     inputs = tokenizer(formatted_msg, 
                       return_tensors='pt',
                       add_special_tokens=False)
