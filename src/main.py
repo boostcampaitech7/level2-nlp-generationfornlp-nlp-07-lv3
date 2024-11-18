@@ -12,44 +12,16 @@ import evaluate
 
 from ast import literal_eval
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig
 from datasets import Dataset
 from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM, LoraConfig
-from arguments import ModelArguments, DataTrainingArguments
+from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 
 
 pd.set_option('display.max_columns', None)
 os.environ["WANDB_MODE"] = "online"
 logger = logging.getLogger(__name__)
-
-PROMPT_NO_QUESTION_PLUS = """지문:
-{paragraph}
-
-질문:
-{question}
-
-선택지:
-{choices}
-
-1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
-정답:"""
-
-PROMPT_QUESTION_PLUS = """지문:
-{paragraph}
-
-질문:
-{question}
-
-<보기>:
-{question_plus}
-
-선택지:
-{choices}
-
-1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
-정답:"""
-
 
 def set_seed(seed: int = 42):
     random.seed(seed)
@@ -85,14 +57,14 @@ def record_to_df(dataset):
     return pd.DataFrame(records)
 
 
-def train_df_to_process_df(dataset):
+def train_df_to_process_df(dataset, q_plus, no_q_plus):
     processed_dataset = []
     for i in range(len(dataset)):
         choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(dataset[i]["choices"])])
 
         # <보기>가 있을 때
         if dataset[i]["question_plus"]:
-            user_message = PROMPT_QUESTION_PLUS.format(
+            user_message = q_plus.format(
                 paragraph=dataset[i]["paragraph"],
                 question=dataset[i]["question"],
                 question_plus=dataset[i]["question_plus"],
@@ -100,7 +72,7 @@ def train_df_to_process_df(dataset):
             )
         # <보기>가 없을 때
         else:
-            user_message = PROMPT_NO_QUESTION_PLUS.format(
+            user_message = no_q_plus.format(
                 paragraph=dataset[i]["paragraph"],
                 question=dataset[i]["question"],
                 choices=choices_string,
@@ -122,7 +94,7 @@ def train_df_to_process_df(dataset):
     return Dataset.from_pandas(pd.DataFrame(processed_dataset))
 
 
-def test_df_to_process_df(dataset):
+def test_df_to_process_df(dataset, q_plus, no_q_plus):
     test_dataset = []
     for i, row in dataset.iterrows():
         choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(row["choices"])])
@@ -130,7 +102,7 @@ def test_df_to_process_df(dataset):
 
         # <보기>가 있을 때
         if row["question_plus"]:
-            user_message = PROMPT_QUESTION_PLUS.format(
+            user_message = q_plus.format(
                 paragraph=row["paragraph"],
                 question=row["question"],
                 question_plus=row["question_plus"],
@@ -138,7 +110,7 @@ def test_df_to_process_df(dataset):
             )
         # <보기>가 없을 때
         else:
-            user_message = PROMPT_NO_QUESTION_PLUS.format(
+            user_message = no_q_plus.format(
                 paragraph=row["paragraph"],
                 question=row["question"],
                 choices=choices_string,
@@ -161,10 +133,11 @@ def test_df_to_process_df(dataset):
 
 def main(run_name, debug=False):
     parser = HfArgumentParser(
-        (ModelArguments, DataTrainingArguments, TrainingArguments)
+        (ModelArguments, DataTrainingArguments, TrainingArguments, CustomArguments)
     )
-    model_args, data_args, train_args = parser.parse_args_into_dataclasses()
+    model_args, data_args, train_args, custom_args = parser.parse_args_into_dataclasses()
     model_name = None
+    plus_prompt, no_plus_prompt = custom_args.prompt_question_plus, custom_args.prompt_no_question_plus
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
     wandb.init(
@@ -183,49 +156,50 @@ def main(run_name, debug=False):
     logging.info(f"model is from {model_args.model_name_or_path}")
     logging.info(f"data is from {data_args.dataset_name}")
 
+    # Load data
+    dataset = pd.read_csv(data_args.dataset_name)
+    dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
+    df = record_to_df(dataset)
+
+    quant = custom_args.quantization
+    quant_config = None
+
+    if quant == 4:
+        quant_config = custom_args.quant_4_bit_config
+
+    elif quant == 8:
+        quant_config = custom_args.quant_8_bit_config
+
     # Load model
     if train_args.do_train:
         model_name = model_args.model_name_or_path
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            trust_remote_code=True,
+            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        )
 
     if not train_args.do_train:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
-
-    # Load data
-    dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
-
-    df = record_to_df(dataset)
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-    ) if train_args.do_train else (
-        AutoPeftModelForCausalLM.from_pretrained(
+        model = AutoPeftModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
-        ))
+            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
         trust_remote_code=True,
     )
 
-    tokenizer.chat_template = "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}"
-
-    peft_config = LoraConfig(
-        r=6,
-        lora_alpha=8,
-        lora_dropout=0.05,
-        target_modules=['q_proj', 'k_proj'],
-        bias="none",
-        task_type="CAUSAL_LM",
-    )
+    tokenizer.chat_template = custom_args.chat_template
+    peft_config = custom_args.peft_config
 
     dataset = Dataset.from_pandas(df)
-    processed_dataset = train_df_to_process_df(dataset)
+    processed_dataset = train_df_to_process_df(dataset, plus_prompt, no_plus_prompt)
 
     def formatting_prompts_func(example):
         output_texts = []
@@ -261,9 +235,7 @@ def main(run_name, debug=False):
         desc="Tokenizing",
     )
 
-    # 데이터 분리
-    # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다.
-    # 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
+    # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
     mex_seq_len = data_args.max_seq_length
     tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= mex_seq_len)
     tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.1, seed=42)
@@ -271,9 +243,9 @@ def main(run_name, debug=False):
     train_dataset = tokenized_dataset['train']
     eval_dataset = tokenized_dataset['test']
 
-    response_template = "<start_of_turn>model"
+
     data_collator = DataCollatorForCompletionOnlyLM(
-        response_template=response_template,
+        response_template=custom_args.response_template,
         tokenizer=tokenizer,
     )
 
@@ -344,13 +316,12 @@ def main(run_name, debug=False):
                 peft_config=peft_config,
                 args=sft_config,
             )
-
             trainer.train()
 
         if train_args.do_predict:
             test_df = pd.read_csv(data_args.test_dataset_name)
             test_df = record_to_df(test_df)
-            test_dataset = test_df_to_process_df(test_df)
+            test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
 
             infer_results = []
             pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
