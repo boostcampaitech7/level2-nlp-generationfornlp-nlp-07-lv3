@@ -57,7 +57,7 @@ def record_to_df(dataset):
     return pd.DataFrame(records)
 
 
-def train_df_to_process_df(dataset, plus, no_plus):
+def train_df_to_process_df(dataset, q_plus, no_q_plus):
     processed_dataset = []
     for i in range(len(dataset)):
         choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(dataset[i]["choices"])])
@@ -94,7 +94,7 @@ def train_df_to_process_df(dataset, plus, no_plus):
     return Dataset.from_pandas(pd.DataFrame(processed_dataset))
 
 
-def test_df_to_process_df(dataset, plus, no_plus):
+def test_df_to_process_df(dataset, q_plus, no_q_plus):
     test_dataset = []
     for i, row in dataset.iterrows():
         choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(row["choices"])])
