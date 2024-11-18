@@ -13,7 +13,12 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from LlamaPreprocessData import process_data
 from datetime import datetime
+import yaml
 
+
+# Load secrets
+with open('../../secrets.yaml', 'r') as f:
+    secrets = yaml.safe_load(f)
 
 # 현재 시간 가져오기
 current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -115,7 +120,7 @@ trainer = SFTTrainer(
     # data_collator=data_collator 못씀. 동적패딩할 배치사이즈가 아님.
 )
 
-wandb.login(key = "3dbaa97e5462898442d5d4e4432f0577cdbac5b1")
+wandb.login(key = secrets['wandb']['api_key'])
 
 wandb.init(
     project="CSAT-Solver",  # 프로젝트 이름
