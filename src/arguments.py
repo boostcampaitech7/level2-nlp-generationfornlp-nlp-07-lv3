@@ -12,7 +12,7 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default='beomi/gemma-ko-2b'
+        default='nlpai-lab/KULLM3'
     )
     train_test_split: Optional[float] = field(
         default=0.3,
@@ -40,7 +40,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=1024,
+        default=512,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
