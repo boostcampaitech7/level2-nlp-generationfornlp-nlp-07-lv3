@@ -64,7 +64,7 @@ def train_df_to_process_df(dataset, q_plus, no_q_plus):
 
         # <보기>가 있을 때
         if dataset[i]["question_plus"]:
-            user_message = plus.format(
+            user_message = q_plus.format(
                 paragraph=dataset[i]["paragraph"],
                 question=dataset[i]["question"],
                 question_plus=dataset[i]["question_plus"],
@@ -72,7 +72,7 @@ def train_df_to_process_df(dataset, q_plus, no_q_plus):
             )
         # <보기>가 없을 때
         else:
-            user_message = no_plus.format(
+            user_message = no_q_plus.format(
                 paragraph=dataset[i]["paragraph"],
                 question=dataset[i]["question"],
                 choices=choices_string,
@@ -102,7 +102,7 @@ def test_df_to_process_df(dataset, q_plus, no_q_plus):
 
         # <보기>가 있을 때
         if row["question_plus"]:
-            user_message = plus.format(
+            user_message = q_plus.format(
                 paragraph=row["paragraph"],
                 question=row["question"],
                 question_plus=row["question_plus"],
@@ -110,7 +110,7 @@ def test_df_to_process_df(dataset, q_plus, no_q_plus):
             )
         # <보기>가 없을 때
         else:
-            user_message = no_plus.format(
+            user_message = no_q_plus.format(
                 paragraph=row["paragraph"],
                 question=row["question"],
                 choices=choices_string,
@@ -185,8 +185,9 @@ def main(run_name, debug=False):
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
         model = AutoPeftModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
+            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
 
     tokenizer = AutoTokenizer.from_pretrained(

@@ -56,4 +56,5 @@ subprocess.run([
     "--model_name_or_path", train_dir,
     "--do_predict",
     "--run_name", run_name,
+    "--quantization", "8",
 ], check=True)
