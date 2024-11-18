@@ -7,8 +7,8 @@ from tqdm import tqdm
 from datasets import load_dataset, Dataset
 from googletrans import Translator
 import time
-#import deepl
-#ㅁ
+import deepl
+
 
 class BackTranslator():
     """
@@ -140,59 +140,38 @@ class BackTranslator():
         return translated_texts
 
     def augment(self, df: pd.DataFrame, augment_columns: list, id_column: str, increment_id: bool = True) -> pd.DataFrame:
-        """
-        데이터프레임의 선택된 컬럼에 대해 역번역 기반 데이터 증강을 수행
-        
-        Args:
-            df (pd.DataFrame): 증강할 데이터프레임
-            augment_columns (list): 증강할 컬럼명 리스트
-            id_column (str): ID 역할을 할 컬럼명
-            increment_id (bool): ID 자동 증가 여부 (기본값: True)
-            
-        Returns:
-            pd.DataFrame: 원본과 증강된 데이터가 결합된 데이터프레임          
-        """
         augmented_data = {}
         
-        # ID 처리 개선
         try:
-            last_id = df[id_column].iloc[-1]
-            
-            if increment_id:  # ID 증가가 선택된 경우
-                # 순수 숫자인 경우
-                if str(last_id).isdigit():
-                    last_id_num = int(last_id)
-                    new_ids = [str(i) for i in range(last_id_num + 1, last_id_num + len(df) + 1)]
-                else:
-                    # 문자열에서 마지막 숫자 부분 추출
-                    import re
-                    number_groups = re.findall(r'\d+', str(last_id))
-                    if number_groups:
-                        last_number = number_groups[-1]
-                        prefix = str(last_id).rsplit(last_number, 1)[0]# 숫자 앞부분을 prefix로
-                        suffix = str(last_id).rsplit(last_number, 1)[1]# 숫자 뒷부분을 suffix로
-                        
-                        new_ids = [
-                            f"{prefix}{str(int(last_number) + i)}{suffix}"
-                            for i in range(1, len(df) + 1)
-                        ]
-                    else:
-                        print(f"경고: ID 컬럼 '{id_column}'에 숫자가 없어 원본 ID를 복제합니다.")
-                        new_ids = [last_id] * len(df)
-            else:  # ID 증가가 선택되지 않은 경우
-                # 원본 ID 복제
-                new_ids = [last_id] * len(df)
-            
-            augmented_data[id_column] = new_ids
-            
+            if increment_id:
+                import re
+                # ID 패턴과 최대 숫자 찾기
+                pattern = re.match(r'(.*?)(\d+)$', str(df[id_column].iloc[0])).group(1)
+                
+                # 모든 ID에서 숫자만 추출하여 최대값 찾기
+                max_num = max([
+                    int(re.search(r'(\d+)$', str(id_val)).group(1))
+                    for id_val in df[id_column]
+                ])
+                
+                # 새로운 ID만 생성 (증강된 데이터용)
+                augmented_data[id_column] = [
+                    f"{pattern}{max_num + i + 1}"
+                    for i in range(len(df))
+                ]
+            else:
+                # ID 증가가 비활성화된 경우 원본 ID 그대로 사용
+                augmented_data[id_column] = df[id_column].tolist()
+
         except Exception as e:
-            print(f"ID 생성 중 오류 발생: {e}. 원본 ID를 복제합니다.")
-            new_ids = [df[id_column].iloc[-1]] * len(df)
-            augmented_data[id_column] = new_ids
-        
-        # 선택된 컬럼 증강
+            print(f"ID 생성 중 오류 발생: {e}")
+            augmented_data[id_column] = [f"augmented-{i+1}" for i in range(len(df))]
+
+        # 나머지 컬럼 처리 (증강된 데이터만)
         for col in df.columns:
-            if col == 'problems' and col in augment_columns:
+            if col == id_column:
+                continue  # ID 컬럼은 이미 처리됨
+            elif col == 'problems' and col in augment_columns:
                 # problems 컬럼 특별 처리
                 problems_data = df[col].apply(eval)
                 target_questions = problems_data.apply(lambda x: x['question'])
@@ -215,7 +194,7 @@ class BackTranslator():
                     augmented_problems.append(str(problem_dict))
                 augmented_data[col] = augmented_problems
                 
-            elif col in augment_columns and col != id_column:
+            elif col in augment_columns:
                 # 일반 컬럼 증강
                 print(f"{col} Back Translation 시작...")
                 batches = self._chunk_batch(df[col])
@@ -224,14 +203,11 @@ class BackTranslator():
                     augmented_values.extend(self._back_translate(batch))
                 augmented_data[col] = augmented_values
             else:
-                # 증강하지 않는 컬럼은 원본 값 유지
+                # 증강하지 않는 컬럼은 원본 값 복사
                 augmented_data[col] = df[col].tolist()
-        
-        # 증강된 데이터프레임 생성
-        augmented_df = pd.DataFrame(augmented_data)
-        
-        # 원본 데이터와 병합하여 반환
-        return pd.concat([df, augmented_df], ignore_index=True)
+
+        # 증강된 데이터만 반환
+        return pd.DataFrame(augmented_data)
 
 def test_augmentation():
     """

@@ -161,6 +161,7 @@ def main():
                         deepl_api_key=deepl_api_key
                     )
                     
+                    # 증강된 데이터 생성
                     augmented_df = bt.augment(
                         df=df,
                         augment_columns=selected_augment_columns,
@@ -168,8 +169,8 @@ def main():
                         increment_id=increment_id
                     )
                     
-                    # 증강된 데이터프레임 생성
-                    augmented_df = pd.DataFrame(augmented_df)
+                    # 원본과 증강 데이터 합치기
+                    final_df = pd.concat([df, augmented_df], ignore_index=True)
                     
                     # 결과 표시
                     status_text.text("완료!")
@@ -197,12 +198,11 @@ def main():
                     
                     with comparison_col2:
                         st.write("증강된 데이터")
-                        # 원본 데이터 길이만큼 건너뛰고 표시
                         st.dataframe(
-                            augmented_df_display.iloc[len(df):],  # 원본 데이터 이후부분만 표시
+                            augmented_df,  # 증강된 데이터만 표시
                             use_container_width=True
                         )
-                        st.write(f"총 {len(augmented_df)-len(df)}개 행")  # 새로 증강된 데이터 수만 표시
+                        st.write(f"총 {len(augmented_df)}개 행")
                     
                     # 상세 비교 (선택된 컬럼만)
                     st.subheader("상세 비교")
@@ -222,12 +222,12 @@ def main():
                         with compare_col2:
                             st.write("증강:")
                             if col == 'problems':
-                                problems_data = augmented_df[col].iloc[len(df):].apply(eval)  # 원본 이후 데이터만
+                                problems_data = augmented_df[col].apply(eval)  # .iloc[len(df):] 제거
                                 questions = problems_data.apply(lambda x: x['question'])
                                 st.dataframe(questions, use_container_width=True)
                             else:
                                 st.dataframe(
-                                    augmented_df[col].iloc[len(df):],  # 원본 이후 데이터만
+                                    augmented_df[col],  # .iloc[len(df):] 제거
                                     use_container_width=True
                                 )
                     
@@ -239,7 +239,7 @@ def main():
                         'target_lang': target_lang,
                         'batch_size': batch_size,
                         'loop_count': loop_count,
-                        'data': pd.concat([df, augmented_df], ignore_index=True).to_csv(index=False)
+                        'data': final_df.to_csv(index=False)
                     }
                     
                     # 최대 5개까지만 저장
