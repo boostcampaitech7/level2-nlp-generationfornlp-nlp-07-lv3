@@ -8,7 +8,7 @@ from datasets import load_dataset, Dataset
 from googletrans import Translator
 import time
 #import deepl
-
+#ㅁ
 
 class BackTranslator():
     """
