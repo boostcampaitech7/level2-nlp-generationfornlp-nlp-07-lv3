@@ -175,7 +175,7 @@ def main(run_name, debug=False):
         model_name = model_args.model_name_or_path
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
