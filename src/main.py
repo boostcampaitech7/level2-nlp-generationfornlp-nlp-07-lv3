@@ -12,7 +12,7 @@ import evaluate
 
 from ast import literal_eval
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig
 from datasets import Dataset
 from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM, LoraConfig
@@ -159,7 +159,7 @@ def test_df_to_process_df(dataset):
     return test_dataset
 
 
-def main(run_name, debug=False):
+def main(run_name, debug=False, use_quant_4bit=False, use_quant_8bit=False):
     parser = HfArgumentParser(
         (ModelArguments, DataTrainingArguments, TrainingArguments)
     )
@@ -197,10 +197,30 @@ def main(run_name, debug=False):
 
     df = record_to_df(dataset)
 
+    if use_quant_4bit:
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16,
+        )
+        use_quant = True
+
+    elif use_quant_8bit:
+        quant_config = BitsAndBytesConfig(
+            load_in_8bit=True,
+        )
+        use_quant = True
+
+    else:
+        quant_config = None
+        use_quant = False
+
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype=torch.float16,
+        torch_dtype=torch.float16 if not use_quant else None,
         trust_remote_code=True,
+        quantization_config=quant_config if use_quant else None,
     ) if train_args.do_train else (
         AutoPeftModelForCausalLM.from_pretrained(
             model_name,
@@ -322,7 +342,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=6,
+                num_train_epochs=3,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -408,4 +428,4 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name)
+    main(argv_run_name, use_quant_4bit=True)
