@@ -20,7 +20,7 @@ from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 
 
 pd.set_option('display.max_columns', None)
-os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_MODE"] = "online"
 logger = logging.getLogger(__name__)
 
 def set_seed(seed: int = 42):

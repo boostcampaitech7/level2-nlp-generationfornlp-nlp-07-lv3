@@ -31,7 +31,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     dataset_name: Optional[str] = field(
-        default=os.path.join(data_dir, 'train_sample_5.csv'),
+        default=os.path.join(data_dir, 'train.csv'),
         metadata={
             "help": "The name of the dataset to use."
         },
