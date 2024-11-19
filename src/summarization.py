@@ -1,81 +1,84 @@
 import os
+
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
 import pandas as pd
 import time
 from ast import literal_eval
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from openai import OpenAI
 
 import torch
+
 torch.cuda.empty_cache()
 
 API_KEY = "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"
 client = OpenAI(api_key=API_KEY, base_url="https://api.perplexity.ai")
 
-model_name = 'CohereForAI/aya-expanse-8b'
-model_name = 'LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct'
+# model_name = 'CohereForAI/aya-expanse-8b'
+# model_name = 'LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct'
+model_name = 'Qwen/Qwen2.5-14B-Instruct'
 save_name = model_name.split('/')[1] + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
-#save_name = "perplexity" + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
-length = 550
+length = 700
 
 parent_dir = os.path.dirname(os.getcwd())
-#dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_5.csv'))
-#dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_sample_longer_then_1024.csv'))
-#dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train.csv'))
-dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'train_longer_then_512_tokens.csv'))
+dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'processed_dataset.csv'))
 
 
-def sperate_dataset(dataset : pd.DataFrame, length=length):
+def sperate_dataset(dataset: pd.DataFrame, length=length):
     # return dataset that paragraph length is longer than length
-    return dataset[dataset['paragraph'].apply(lambda x: len(x) > length)], dataset[dataset['paragraph'].apply(lambda x: len(x) <= length)]
+    return dataset[dataset['token_length'].apply(lambda x: x > length)], dataset[
+        dataset['token_length'].apply(lambda x: x <= length)]
 
 
 def get_llm_output(data_row, tokenizer, model, length=length):
     paragraph = data_row['paragraph']
-
-    if len(paragraph) < length:
-        return paragraph
-
-    problems = literal_eval(data_row['problems'])
-    question = problems['question']
-    choices = problems['choices']
+    question = data_row['question']
+    choices = data_row['choices']
+    answer = data_row['answer']
 
     messages = [
         {
             'role': 'system',
-            'content': f'당신은 요약을 하는 기자입니다. 다음 문서를 주어진 문제를 풀 수 있는 수준으로 요약하세요. {length}자로 요약하세요. 문서만 출력하세요.'
-
+            'content': (
+                "You are a professional journalist tasked with summarizing articles. "
+                "Your goal is to create a concise summary of the provided article, "
+                "while ensuring no sentences relevant to the given problems are removed."
+            )
         },
         {
             'role': 'user',
-            'content': f'\n\n문서 : {paragraph}\n\n문제 : {question}\n\nChoice : {choices}\n\n요약 : '
+            'content': (
+                "Here is an article and related information:\n"
+                f"Article: {paragraph}\n"
+                f"Problem: {question}\n"
+                f"Choices: {choices}\n"
+                f"Answer: {answer}\n"
+                "Your task: Summarize the article based on the context of the problem. "
+                "Make the summary concise and ensure no critical sentences related to the problem are omitted."
+            )
         }
     ]
 
     input_ids = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
     gen_tokens = model.generate(
         input_ids.to('cuda'),
-        max_new_tokens=int(length * 1.5),
+        max_length=int(len(paragraph) * 2),
         do_sample=True,
         temperature=0.3,
-        )
+    )
     gen_text = tokenizer.decode(gen_tokens[0])
 
-    trim_start_index = gen_text.find('[|assistant|]')
-    trim_0 = gen_text[trim_start_index+len('[|assistant|]'):]
+    trim_start_index = gen_text.rfind('<|im_start|>')
+    trim_end_index = gen_text.rfind('<|im_end|>')
+    trim = gen_text[trim_start_index + len('<|im_start|>'):trim_end_index]
+    trim = trim.replace('assistant\n', '')
+    trim = trim.replace('<|im_start|>', '')
+    trim = trim.replace('<|im_end|>', '')
+    trim = trim.replace('\n\n', '\n')
 
-    trim_end_index = trim_0.find('[|endofturn|]')
-    trim_1 = trim_0[:trim_end_index]
-
-    output = trim_1.split('\n\n')
-    trim_2 = ''.join(output[:-1])
-
-    if '문제:' in trim_2:
-        trim_2 = trim_2.split('문제:')[0]
-
-    return trim_2
+    return trim
 
 
 def run_perplexity(data_row, length=length):
@@ -103,7 +106,7 @@ def run_perplexity(data_row, length=length):
             'content': '요약 : '
         }
     ]
-    
+
     # API 호출 및 응답 받기
     response = client.chat.completions.create(
         model="llama-3.1-sonar-large-128k-online",
@@ -117,35 +120,40 @@ def run_perplexity(data_row, length=length):
     return output
 
 
-def run_llm(dataset : pd.DataFrame, save_every=25):
+def run_llm(dataset: pd.DataFrame, save_every=10):
     longer, shorter = sperate_dataset(dataset)
-    new_df = pd.DataFrame(columns=['id', 'paragraph', 'problems', 'question_plus'])
+
+    # sort longer dataset by token_length desc
+    longer = longer.sort_values(by='token_length', ascending=False)
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, trust_remote_code=True).to(
-        'cuda')
+
+    quant = BitsAndBytesConfig(
+        load_in_8bit=True,
+    )
+
+    model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quant, trust_remote_code=True)
 
     for i in tqdm(range(0, len(longer))):
         before = len(longer.iloc[i]['paragraph'])
-        #output = run_perplexity(longer.iloc[i])
         output = get_llm_output(longer.iloc[i], tokenizer, model)
         after = len(output)
 
-        if before < after:
-            # drop this row
-            longer = longer.drop(i)
-            continue
-
-        new_df = pd.concat([new_df, pd.DataFrame([[longer.iloc[i]['id'], output, longer.iloc[i]['problems'], longer.iloc[i]['question_plus']]], columns=new_df.columns)])
         print(f'Before : {before} / After : {after}')
 
+        if before == after:
+            print('Same length', longer.iloc[i]['paragraph'], output)
+
+        # add trim_paragraph column to dataset
+        longer.loc[longer.index[i], 'trim_paragraph'] = output
+
         if i % save_every == 0:
-            new_df.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
+            longer.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
 
     # concat and sort by length desc then save
-    new_df.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
+    longer.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
 
 
 if __name__ == '__main__':
     run_llm(dataset)
-    #run_perplexity(dataset.iloc[0])
+    # run_perplexity(dataset.iloc[0])
