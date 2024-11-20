@@ -16,12 +16,13 @@ import pandas as pd
 from datasets import Dataset, concatenate_datasets, load_from_disk
 from torch.nn.functional import normalize
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+from retrieval import retrieval
+
 from rank_bm25 import BM25Okapi, BM25Plus
 from transformers import AutoTokenizer, AutoModel
 from main import set_seed
 
-set_seed(42)
+set_seed(2024)
 logger = logging.getLogger(__name__)
 
 @contextmanager
@@ -35,14 +36,13 @@ def mean_pooling(model_output, attention_mask):
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
-class HybridSearch:
+class HybridSearch(retrieval):
     def __init__(
         self,
         tokenize_fn,
-        dense_model_name: Optional[str] = 'intfloat/multilingual-e5-large-instruct',
+        dense_model_name: list = ['intfloat/multilingual-e5-large-instruct'],
         data_path: Optional[str] = "../data/",
         context_path: Optional[str] = "wiki_documents_original.csv",
-        corpus: Optional[pd.DataFrame] = None
     ) -> NoReturn:
         self.data_path = data_path
         with open(os.path.join(data_path, context_path), "r", encoding="utf-8") as f:
@@ -54,7 +54,7 @@ class HybridSearch:
 
         self.tokenize_fn=tokenize_fn
 
-        self.dense_model_name = dense_model_name
+        self.dense_model_name = dense_model_name[0]
         self.dense_tokenize_fn = AutoTokenizer.from_pretrained(
             self.dense_model_name
         )

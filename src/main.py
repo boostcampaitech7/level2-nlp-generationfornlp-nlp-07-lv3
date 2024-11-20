@@ -23,7 +23,7 @@ pd.set_option('display.max_columns', None)
 os.environ["WANDB_MODE"] = "online"
 logger = logging.getLogger(__name__)
 
-def set_seed(seed: int = 42):
+def set_seed(seed: int = 2024):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -158,7 +158,7 @@ def main(run_name, debug=False):
 
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
+    dataset = dataset.sample(200, random_state=SEED).reset_index(drop=True) if debug else dataset
     df = record_to_df(dataset)
 
     quant = custom_args.quantization
@@ -293,7 +293,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=10,
+                num_train_epochs=30,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -378,4 +378,4 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name)
+    main(argv_run_name, debug=True)

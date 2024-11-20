@@ -16,12 +16,13 @@ from datasets import Dataset, concatenate_datasets, load_from_disk
 from torch.nn.functional import normalize
 
 from retrieval_hybrid import HybridSearch
+from retrieval import retrieval
 
 from rank_bm25 import BM25Okapi, BM25Plus
 from transformers import AutoTokenizer, AutoModel
 from main import set_seed
 
-set_seed(42)
+set_seed(2024)
 logger = logging.getLogger(__name__)
 
 @contextmanager
@@ -31,7 +32,7 @@ def timer(name):
     logging.info(f"[{name}] done in {time.time() - t0:.3f} s")
 
 
-class Reranker:
+class Reranker(retrieval):
     def __init__(
         self,
         tokenize_fn,
@@ -90,7 +91,7 @@ class Reranker:
                 _, doc_contexts = self.retrieve_first(example['question'], topk)
                 retrieved_contexts.append(doc_contexts)
 
-        half_topk = 5 #int(topk / 3)
+        half_topk = 5 
 
         if isinstance(query_or_dataset, str):
             second_df = self.retireve_second(query_or_dataset, half_topk, contexts=retrieved_contexts)

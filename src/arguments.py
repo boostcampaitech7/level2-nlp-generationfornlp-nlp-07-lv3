@@ -15,7 +15,7 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default="yanolja/EEVE-Korean-Instruct-10.8B-v1.0"
+        default="Qwen/Qwen2.5-14B-Instruct"
     )
     train_test_split: Optional[float] = field(
         default=0.3,
@@ -43,7 +43,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=512,
+        default=700,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
