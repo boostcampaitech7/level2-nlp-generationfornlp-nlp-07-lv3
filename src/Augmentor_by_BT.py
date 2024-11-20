@@ -139,7 +139,9 @@ class BackTranslator():
                 translated_texts.append(text)
         return translated_texts
 
-    def augment(self, df: pd.DataFrame, augment_columns: list, id_column: str, increment_id: bool = True) -> pd.DataFrame:
+    def augment(self, df: pd.DataFrame, augment_columns: list, id_column: str, 
+                increment_id: bool = True, augment_question: bool = True, 
+                augment_choices: bool = False) -> pd.DataFrame:
         augmented_data = {}
         
         try:
@@ -172,28 +174,37 @@ class BackTranslator():
             if col == id_column:
                 continue  # ID 컬럼은 이미 처리됨
             elif col == 'problems' and col in augment_columns:
-                # problems 컬럼 특별 처리
                 problems_data = df[col].apply(eval)
-                target_questions = problems_data.apply(lambda x: x['question'])
-                
-                # question 증강
-                print(f"{col} - Question Back Translation 시작...")
-                question_batches = self._chunk_batch(target_questions)
-                augmented_questions = []
-                for batch in tqdm(question_batches):
-                    augmented_questions.extend(self._back_translate(batch))
-                
-                # 증강된 problems 데이터 생성
                 augmented_problems = []
-                for q, p_data in zip(augmented_questions, problems_data):
+                
+                for p_data in problems_data:
+                    question = p_data['question']
+                    choices = p_data['choices']
+                    
+                    # 질문 증강 (선택적)
+                    if augment_question:
+                        question_batch = self._back_translate([question])
+                        augmented_question = question_batch[0]
+                    else:
+                        augmented_question = question
+                    
+                    # 보기 증강 (선택적)
+                    if augment_choices:
+                        augmented_choices = []
+                        for choice in choices:
+                            choice_batch = self._back_translate([choice])
+                            augmented_choices.append(choice_batch[0])
+                    else:
+                        augmented_choices = choices
+                    
                     problem_dict = {
-                        'question': q,
-                        'choices': p_data['choices'],    # 원본 유지
-                        'answer': p_data['answer']       # 원본 유지
+                        'question': augmented_question,
+                        'choices': augmented_choices,
+                        'answer': p_data['answer']
                     }
                     augmented_problems.append(str(problem_dict))
-                augmented_data[col] = augmented_problems
                 
+                augmented_data[col] = augmented_problems
             elif col in augment_columns:
                 # 일반 컬럼 증강
                 print(f"{col} Back Translation 시작...")

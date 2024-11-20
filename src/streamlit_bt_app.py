@@ -106,6 +106,32 @@ def main():
             st.warning("증강할 컬럼을 1개 이상 선택해주세요.")
             return
         
+        # problems 컬럼이 선택되었을 때 추가 옵션 표시
+        if 'problems' in selected_augment_columns:
+            st.subheader("Problems 컬럼 증강 설정")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                augment_question = st.checkbox(
+                    "질문(question) 증강",
+                    value=True,
+                    help="문제의 질문을 증강합니다."
+                )
+            
+            with col2:
+                augment_choices = st.checkbox(
+                    "보기(choices) 증강",
+                    value=False,
+                    help="문제의 보기를 증강합니다."
+                )
+                
+            if not augment_question and not augment_choices:
+                st.warning("최소한 하나는 선택해야 합니다.")
+                return
+        else:
+            augment_question = False
+            augment_choices = False
+        
         # 나머지 설정 파라미터들
         st.subheader("증강 설정")
         col1, col2, col3, col4 = st.columns(4)
@@ -166,7 +192,9 @@ def main():
                         df=df,
                         augment_columns=selected_augment_columns,
                         id_column=selected_id_columns[0],
-                        increment_id=increment_id
+                        increment_id=increment_id,
+                        augment_question=augment_question,
+                        augment_choices=augment_choices
                     )
                     
                     # 원본과 증강 데이터 합치기
