@@ -44,6 +44,7 @@ subprocess.run([
     "--do_eval",
     "--overwrite_output_dir",
     "--run_name", run_name,
+    "--quantization", "8",
 ], check=True)
 
 # Perform prediction (inference)
@@ -54,4 +55,5 @@ subprocess.run([
     "--model_name_or_path", train_dir,
     "--do_predict",
     "--run_name", run_name,
+    "--quantization", "8",
 ], check=True)
