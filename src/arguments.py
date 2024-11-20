@@ -122,3 +122,9 @@ class CustomArguments:
             "help": "Quant 8 bit config"
         },
     )
+    do_RAG : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "RAG for pred"
+        },
+    )

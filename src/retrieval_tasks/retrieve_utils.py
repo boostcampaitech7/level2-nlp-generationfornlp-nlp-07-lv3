@@ -12,19 +12,14 @@ def len_of_tokens(tokenizer, context):
         return len(tokens)
 
 def llm_summary(llm, tokenizer, retrieved_contexts, max_response_tokens):
-    prompt = (
-        f"지문:\n\"{row['paragraph']}\"\n\n"
-        f"문제:\n\"{row['problems']['question']}\"\n\n"
-        f"보기:\n\"{row['problems']['choices']}\"\n\n"
-        f"정답:\n\"{row['problems']['answer']}\"\n\n"
-    )   
     messages = [
         {"role": "system", 
         "content": f"주어진 지문과 문제를 바탕으로, rag된 문서에서 문제 풀이에 도움이 될 만한 내용들을 중심으로 {max_response_tokens} 길이로 요약을 해주세요. 요약한 내용만 출력하고 기타 다른 추가적인 설명 같은 건 생략하세요"},
-        {"role": "user", "content": prompt}
+        {"role": "user", "content": retrieved_contexts}
     ]
     inputs = tokenizer.apply_chat_template(
         messages,
+        truncation=True,
         tokenize=True,
         add_generation_prompt=True,
         return_tensors="pt"
@@ -61,6 +56,7 @@ def llm_check(llm, tokenizer, query):
     ]
     inputs = tokenizer.apply_chat_template(
         messages,
+        truncation=True,
         tokenize=True,
         add_generation_prompt=True,
         return_tensors="pt"
@@ -85,19 +81,19 @@ def llm_check(llm, tokenizer, query):
     return result
 
 
-def retrieve(retriever, llm, tokenizer, messages, topk, max_seq_length):
+def retrieve(retriever, llm, tokenizer, messages, max_seq_length, topk: int=5):
     prompt_tokens = len_of_tokens(tokenizer, ' '.join(messages['content']))
     max_response_tokens = max_seq_length - (prompt_tokens + 20)
-    if max_response_tokens > prompt_tokens: 
+    if max_response_tokens < 0: 
         return None
 
     query = [message['content'] for message in messages if message['role'] == 'user'][-1]
     result = llm_check(llm, tokenizer, query)
     if '필요함' in result:
-        scores, contexts = retriever.retrieve(query, topk=topk)
-
-        return scores, contexts
+        _ , contexts = retriever.retrieve(query, topk=topk)
+        summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
+        return summary
     elif '필요하지않음' in result:
         return None
-
-if __name__ == "__main__":
+    else:
+        return None

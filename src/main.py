@@ -18,6 +18,10 @@ from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM, LoraConfig
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 
+from retrieval_tasks.retrieval_hybrid import HybridSearch
+from retrieval_tasks.retrieval_rerank import Reranker
+from retrieval_tasks.retrieve_utils import retrieve
+
 
 pd.set_option('display.max_columns', None)
 os.environ["WANDB_MODE"] = "online"
@@ -158,7 +162,7 @@ def main(run_name, debug=False):
 
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(200, random_state=SEED).reset_index(drop=True) if debug else dataset
+    dataset = dataset.sample(500, random_state=SEED).reset_index(drop=True) if debug else dataset
     df = record_to_df(dataset)
 
     quant = custom_args.quantization
@@ -293,7 +297,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=30,
+                num_train_epochs=10,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -332,6 +336,15 @@ def main(run_name, debug=False):
                     _id = data["id"]
                     messages = data["messages"]
                     len_choices = data["len_choices"]
+
+                    if custom_args.do_RAG:
+                        retriever = HybridSearch(
+                                tokenize_fn=tokenizer.tokenize,
+                                dense_model_name=['intfloat/multilingual-e5-large-instruct'],  #"upskyy/bge-m3-korean",
+                                context_path=args.context_path,
+                            )
+                        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, messages, data_args.max_seq_length, topk=5)
+                        messages[-1]['content'] += retrieved_contexts_summary
 
                     outputs = model(
                         tokenizer.apply_chat_template(

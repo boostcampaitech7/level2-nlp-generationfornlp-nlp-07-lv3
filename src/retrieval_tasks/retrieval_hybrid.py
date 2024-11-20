@@ -278,7 +278,7 @@ if __name__ == "__main__":
 
     retriever = HybridSearch(
         tokenize_fn=tokenizer.tokenize,
-        dense_model_name='intfloat/multilingual-e5-large-instruct',  #"upskyy/bge-m3-korean",
+        dense_model_name=['intfloat/multilingual-e5-large-instruct'],  #"upskyy/bge-m3-korean",
         context_path=args.context_path,
     )
     retriever.get_dense_embedding()
