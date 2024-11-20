@@ -51,7 +51,7 @@ PROMPT_QUESTION_PLUS = """지문:
 정답:"""
 
 
-def set_seed(seed: int = 42):
+def set_seed(seed: int = 2024):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -61,7 +61,7 @@ def set_seed(seed: int = 42):
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True)
 
-SEED = 42
+SEED = 2024
 set_seed(SEED)
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -213,7 +213,7 @@ def main(run_name, debug=False):
         trust_remote_code=True,
     )
 
-    tokenizer.chat_template = "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}"
+    tokenizer.chat_template = "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<s>user\n' + content + '<|im_end|>\n<s>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}"
 
     peft_config = LoraConfig(
         r=6,
@@ -271,7 +271,7 @@ def main(run_name, debug=False):
     train_dataset = tokenized_dataset['train']
     eval_dataset = tokenized_dataset['test']
 
-    response_template = "<start_of_turn>model"
+    response_template = "<s>model"
     data_collator = DataCollatorForCompletionOnlyLM(
         response_template=response_template,
         tokenizer=tokenizer,
@@ -322,12 +322,12 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=3,
+                num_train_epochs=10,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
                 save_strategy="epoch",
-                eval_strategy="epoch",
+                #eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
                 report_to="wandb",
