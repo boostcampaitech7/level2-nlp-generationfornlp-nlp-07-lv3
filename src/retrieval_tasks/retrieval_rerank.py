@@ -10,17 +10,23 @@ from typing import List, Optional, Tuple, Union, NoReturn
 from tqdm.auto import tqdm
 
 import argparse
+import random
 import numpy as np
 import pandas as pd
 from datasets import Dataset, concatenate_datasets, load_from_disk
 from torch.nn.functional import normalize
 
-from retrieval_hybrid import HybridSearch
-from retrieval import retrieval
+from retrieval_tasks.retrieval_hybrid import HybridSearch
+from retrieval_tasks.retrieval import retrieval
+# from retrieval_hybrid import HybridSearch
+# from retrieval import retrieval
+
 
 from rank_bm25 import BM25Okapi, BM25Plus
 from transformers import AutoTokenizer, AutoModel
-from main import set_seed
+
+from retrieval_tasks.utils import set_seed
+# from utils import set_seed
 
 set_seed(2024)
 logger = logging.getLogger(__name__)

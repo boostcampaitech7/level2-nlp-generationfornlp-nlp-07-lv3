@@ -11,16 +11,20 @@ from typing import List, Optional, Tuple, Union, NoReturn
 from tqdm.auto import tqdm
 
 import argparse
+import random
 import numpy as np
 import pandas as pd
 from datasets import Dataset, concatenate_datasets, load_from_disk
 from torch.nn.functional import normalize
 
-from retrieval import retrieval
+from retrieval_tasks.retrieval import retrieval
+# from retrieval import retrieval
 
 from rank_bm25 import BM25Okapi, BM25Plus
 from transformers import AutoTokenizer, AutoModel
-from main import set_seed
+
+from retrieval_tasks.utils import set_seed
+# from utils import set_seed
 
 set_seed(2024)
 logger = logging.getLogger(__name__)
@@ -149,6 +153,8 @@ class HybridSearch(retrieval):
                 model_output = self.dense_embeder(**encoded_input)
             sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
             sentence_embeddings = normalize(sentence_embeddings, p=2, dim=1)
+            self.dense_embeder.cpu()
+            del encoded_input
             return sentence_embeddings.cpu()
 
     def hybrid_scale(self, dense_score, sparse_score, alpha: float):
@@ -186,7 +192,7 @@ class HybridSearch(retrieval):
         c_vec = c_vec / c_vec.norm(dim=1, keepdim=True)
         return torch.mm(q_vec, c_vec.T)
 
-    def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha: Optional[float] = 0.7, no_sparse: bool = True):
+    def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha: Optional[float] = 0, no_sparse: bool = True):
         assert self.sparse_embeder is not None, "You should first execute `get_sparse_embedding()`"
         assert self.dense_embeds is not None, "You should first execute `get_dense_embedding()`"
 

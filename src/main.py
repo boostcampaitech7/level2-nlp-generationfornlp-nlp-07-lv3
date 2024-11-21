@@ -15,7 +15,7 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig
 from datasets import Dataset
 from tqdm import tqdm
-from peft import AutoPeftModelForCausalLM, LoraConfig
+from peft import AutoPeftModelForCausalLM, LoraConfig, PeftModel
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 
 from retrieval_tasks.retrieval_hybrid import HybridSearch
@@ -35,7 +35,7 @@ def set_seed(seed: int = 2024):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True)
+    torch.use_deterministic_algorithms(False)
 
 SEED = 2024
 set_seed(SEED)
@@ -162,7 +162,7 @@ def main(run_name, debug=False):
 
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(500, random_state=SEED).reset_index(drop=True) if debug else dataset
+    dataset = dataset.sample(5, random_state=SEED).reset_index(drop=True) if debug else dataset
     df = record_to_df(dataset)
 
     quant = custom_args.quantization
@@ -184,7 +184,7 @@ def main(run_name, debug=False):
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
 
-    if not train_args.do_train:
+    if not train_args.do_train and not custom_args.do_RAG:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
         model = AutoPeftModelForCausalLM.from_pretrained(
@@ -194,11 +194,31 @@ def main(run_name, debug=False):
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
 
+    if not train_args.do_train and custom_args.do_RAG:
+        latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
+        adaptor = os.path.join(model_args.model_name_or_path, latest_ckpt)
+        model_name = custom_args.peft_base
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            trust_remote_code=True,
+            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        )
+
+    def apply_lora(model, adaptor_path):
+        lora_model = PeftModel.from_pretrained(model, adaptor_path)
+        return lora_model
+
+    def remove_lora(model):
+        vanilla_model = model.merge_and_unload()
+        return vanilla_model
+
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
         trust_remote_code=True,
     )
 
+    default_chat_template = tokenizer.chat_template
     tokenizer.chat_template = custom_args.chat_template
     peft_config = custom_args.peft_config
 
@@ -297,7 +317,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=10,
+                num_train_epochs=1,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -325,11 +345,22 @@ def main(run_name, debug=False):
             test_df = pd.read_csv(data_args.test_dataset_name)
             test_df = record_to_df(test_df)
             test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
+            
+            if custom_args.do_RAG:
+                retriever = HybridSearch(
+                            tokenize_fn=tokenizer.tokenize,
+                            dense_model_name=['intfloat/multilingual-e5-large-instruct'],  #"upskyy/bge-m3-korean",
+                            data_path= "../data/",
+                            context_path = "wiki_documents_original.csv",
+                        )
+                retriever.get_dense_embedding()
+                retriever.get_sparse_embedding()
 
             infer_results = []
             pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
 
             model.to(DEVICE)
+            model = apply_lora(model, adaptor)
             model.eval()
             with torch.inference_mode():
                 for data in tqdm(test_dataset):
@@ -338,13 +369,15 @@ def main(run_name, debug=False):
                     len_choices = data["len_choices"]
 
                     if custom_args.do_RAG:
-                        retriever = HybridSearch(
-                                tokenize_fn=tokenizer.tokenize,
-                                dense_model_name=['intfloat/multilingual-e5-large-instruct'],  #"upskyy/bge-m3-korean",
-                                context_path=args.context_path,
-                            )
+                        print(_id)
+                        model = remove_lora(model)
+                        tokenizer.chat_template = default_chat_template 
                         retrieved_contexts_summary = retrieve(retriever, model, tokenizer, messages, data_args.max_seq_length, topk=5)
-                        messages[-1]['content'] += retrieved_contexts_summary
+                        
+                        if retrieved_contexts_summary is not None:
+                            messages[-1]['content'] += retrieved_contexts_summary
+                        model = apply_lora(model, adaptor)
+                        tokenizer.chat_template = custom_args.chat_template
 
                     outputs = model(
                         tokenizer.apply_chat_template(
@@ -392,3 +425,4 @@ if __name__ == '__main__':
             argv_run_name = input("run name is missing, please add run name : ")
 
     main(argv_run_name, debug=True)
+    # main(argv_run_name)
