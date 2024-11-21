@@ -1,3 +1,4 @@
+import ast
 import os
 
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
@@ -13,30 +14,30 @@ import torch
 
 torch.cuda.empty_cache()
 
-API_KEY = "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"
+API_KEY = "API HERE"
 client = OpenAI(api_key=API_KEY, base_url="https://api.perplexity.ai")
 
-# model_name = 'CohereForAI/aya-expanse-8b'
-# model_name = 'LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct'
 model_name = 'Qwen/Qwen2.5-14B-Instruct'
 save_name = model_name.split('/')[1] + '_summurization_' + time.strftime('%Y%m%d_%H%M%S')
 length = 700
 
 parent_dir = os.path.dirname(os.getcwd())
-dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'processed_dataset.csv'))
+dataset = pd.read_csv(os.path.join(parent_dir, 'data', 'chinese_data.csv'))
 
 
 def sperate_dataset(dataset: pd.DataFrame, length=length):
     # return dataset that paragraph length is longer than length
-    return dataset[dataset['token_length'].apply(lambda x: x > length)], dataset[
-        dataset['token_length'].apply(lambda x: x <= length)]
+    return dataset[dataset['paragraph'].apply(lambda x: len(x) > length)], dataset[
+        dataset['paragraph'].apply(lambda x: len(x) <= length)]
 
 
 def get_llm_output(data_row, tokenizer, model, length=length):
     paragraph = data_row['paragraph']
-    question = data_row['question']
-    choices = data_row['choices']
-    answer = data_row['answer']
+    problems = ast.literal_eval(data_row['problems'])
+
+    question = problems['question']
+    choices = problems['choices']
+    answer = problems['answer']
 
     messages = [
         {
@@ -123,8 +124,8 @@ def run_perplexity(data_row, length=length):
 def run_llm(dataset: pd.DataFrame, save_every=10):
     longer, shorter = sperate_dataset(dataset)
 
-    # sort longer dataset by token_length desc
-    longer = longer.sort_values(by='token_length', ascending=False)
+    # sort longer dataset by length of paragraph column desc
+    longer = longer.sort_values(by='paragraph', key=lambda x: x.str.len(), ascending=False)
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -134,6 +135,8 @@ def run_llm(dataset: pd.DataFrame, save_every=10):
 
     model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quant, trust_remote_code=True)
 
+    new_df = pd.DataFrame(columns=['id', 'paragraph', 'problems', 'question_plus'])
+
     for i in tqdm(range(0, len(longer))):
         before = len(longer.iloc[i]['paragraph'])
         output = get_llm_output(longer.iloc[i], tokenizer, model)
@@ -141,19 +144,18 @@ def run_llm(dataset: pd.DataFrame, save_every=10):
 
         print(f'Before : {before} / After : {after}')
 
-        if before == after:
-            print('Same length', longer.iloc[i]['paragraph'], output)
-
         # add trim_paragraph column to dataset
-        longer.loc[longer.index[i], 'trim_paragraph'] = output
+        new_df = pd.concat([new_df, pd.DataFrame({'id': [longer.iloc[i]['id']], 'paragraph': [output],
+                                                  'problems': [longer.iloc[i]['problems']],
+                                                  'question_plus': [longer.iloc[i]['question_plus']]}), ],
+                           ignore_index=True)
 
         if i % save_every == 0:
-            longer.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
+            new_df.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
 
     # concat and sort by length desc then save
-    longer.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
+    new_df.to_csv(os.path.join(parent_dir, 'data', f'{save_name}.csv'), index=False)
 
 
 if __name__ == '__main__':
     run_llm(dataset)
-    # run_perplexity(dataset.iloc[0])
