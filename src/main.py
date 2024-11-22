@@ -332,7 +332,6 @@ def main(run_name, debug=False):
                     messages = data["messages"]
                     len_choices = data["len_choices"]
 
-                    print(tokenizer.model_max_length)
                     input = tokenizer.apply_chat_template(
                             messages,
                             tokenize=True,
