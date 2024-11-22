@@ -23,9 +23,6 @@ pd.set_option('display.max_columns', None)
 os.environ["WANDB_MODE"] = "online"
 logger = logging.getLogger(__name__)
 
-parent_dir = os.path.dirname(os.getcwd())
-now = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-
 def set_seed(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
@@ -135,11 +132,11 @@ def test_df_to_process_df(dataset, q_plus, no_q_plus):
 
 
 def main(run_name, debug=False):
-    model_name = None
     parser = HfArgumentParser(
         (ModelArguments, DataTrainingArguments, TrainingArguments, CustomArguments)
     )
     model_args, data_args, train_args, custom_args = parser.parse_args_into_dataclasses()
+    model_name = None
     plus_prompt, no_plus_prompt = custom_args.prompt_question_plus, custom_args.prompt_no_question_plus
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
@@ -162,15 +159,15 @@ def main(run_name, debug=False):
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
     dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
-    dataset.to_csv(parent_dir, 'data', f"sampled_dataset_{now}.csv") if debug else None
-
     df = record_to_df(dataset)
 
+    quant = custom_args.quantization
     quant_config = None
-    if custom_args.quantization == 4:
+
+    if quant == 4:
         quant_config = custom_args.quant_4_bit_config
 
-    elif custom_args.quantization == 8:
+    elif quant == 8:
         quant_config = custom_args.quant_8_bit_config
 
     # Load model
@@ -198,6 +195,12 @@ def main(run_name, debug=False):
         trust_remote_code=True,
     )
 
+    tokenizer.chat_template = custom_args.chat_template
+    peft_config = custom_args.peft_config
+
+    dataset = Dataset.from_pandas(df)
+    processed_dataset = train_df_to_process_df(dataset, plus_prompt, no_plus_prompt)
+
     def formatting_prompts_func(example):
         output_texts = []
         for i in range(len(example["messages"])):
@@ -222,6 +225,30 @@ def main(run_name, debug=False):
             "attention_mask": outputs["attention_mask"],
         }
 
+    # 데이터 토큰화
+    tokenized_dataset = processed_dataset.map(
+        tokenize,
+        remove_columns=list(processed_dataset.features),
+        batched=True,
+        num_proc=4,
+        load_from_cache_file=True,
+        desc="Tokenizing",
+    )
+
+    # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
+    mex_seq_len = data_args.max_seq_length
+    tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= mex_seq_len)
+    tokenized_dataset = tokenized_dataset.train_test_split(test_size=0.1, seed=42)
+
+    train_dataset = tokenized_dataset['train']
+    eval_dataset = tokenized_dataset['test']
+
+
+    data_collator = DataCollatorForCompletionOnlyLM(
+        response_template=custom_args.response_template,
+        tokenizer=tokenizer,
+    )
+
     # 모델의 logits 를 조정하여 정답 토큰 부분만 출력하도록 설정
     def preprocess_logits_for_metrics(logits, labels):
         logits = logits if not isinstance(logits, tuple) else logits[0]
@@ -232,6 +259,7 @@ def main(run_name, debug=False):
 
     # metric 로드
     acc_metric = evaluate.load("accuracy")
+
     # metric 계산 함수
     def compute_metrics(evaluation_result):
         logits, labels = evaluation_result
@@ -251,45 +279,19 @@ def main(run_name, debug=False):
         acc = acc_metric.compute(predictions=predictions, references=labels)
         return acc
 
+    # 모델 설정, pad token 설정
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+    tokenizer.padding_side = 'right'
+
     try:
         if train_args.do_train:
-            dataset = Dataset.from_pandas(df)
-            processed_dataset = train_df_to_process_df(dataset, plus_prompt, no_plus_prompt)
-
-            tokenizer.chat_template = custom_args.chat_template
-            # 데이터 토큰화
-            tokenized_dataset = processed_dataset.map(
-                tokenize,
-                remove_columns=list(processed_dataset.features),
-                batched=True,
-                num_proc=4,
-                load_from_cache_file=True,
-                desc="Tokenizing",
-            )
-
-            # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
-            tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= data_args.max_seq_length)
-            tokenized_dataset = tokenized_dataset.train_test_split(test_size=model_args.train_test_split, seed=SEED)
-
-            train_dataset = tokenized_dataset['train']
-            eval_dataset = tokenized_dataset['test']
-
-            data_collator = DataCollatorForCompletionOnlyLM(
-                response_template=custom_args.response_template,
-                tokenizer=tokenizer,
-            )
-
-            # 모델 설정, pad token 설정
-            tokenizer.pad_token = tokenizer.eos_token
-            tokenizer.pad_token_id = tokenizer.eos_token_id
-            tokenizer.padding_side = 'right'
-
             sft_config = SFTConfig(
                 output_dir=train_args.output_dir,
                 do_train=True,
                 do_eval=True,
                 lr_scheduler_type="cosine",
-                max_seq_length=data_args.max_seq_length,
+                max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
                 num_train_epochs=3,
@@ -311,7 +313,7 @@ def main(run_name, debug=False):
                 tokenizer=tokenizer,
                 compute_metrics=compute_metrics,
                 preprocess_logits_for_metrics=preprocess_logits_for_metrics,
-                peft_config=custom_args.peft_config,
+                peft_config=peft_config,
                 args=sft_config,
             )
             trainer.train()
@@ -332,15 +334,14 @@ def main(run_name, debug=False):
                     messages = data["messages"]
                     len_choices = data["len_choices"]
 
-                    print(tokenizer.model_max_length)
-                    input = tokenizer.apply_chat_template(
+                    outputs = model(
+                        tokenizer.apply_chat_template(
                             messages,
                             tokenize=True,
                             add_generation_prompt=True,
                             return_tensors="pt",
                         ).to(DEVICE)
-
-                    outputs = model(input)
+                    )
 
                     logits = outputs.logits[:, -1].flatten().cpu()
 
