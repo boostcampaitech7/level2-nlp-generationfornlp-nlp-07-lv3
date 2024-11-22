@@ -18,7 +18,7 @@ class ModelArguments:
         default='beomi/gemma-ko-2b',
     )
     train_test_split: Optional[float] = field(
-        default=0.3,
+        default=0.1,
         metadata={
             "help": "test_size"
         },
