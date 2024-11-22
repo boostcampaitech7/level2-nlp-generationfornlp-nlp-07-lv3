@@ -35,7 +35,7 @@ def set_seed(seed: int = 2024):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(False)
+    torch.use_deterministic_algorithms(True)
 
 SEED = 2024
 set_seed(SEED)
@@ -134,6 +134,93 @@ def test_df_to_process_df(dataset, q_plus, no_q_plus):
 
     return test_dataset
 
+def test_df_to_process_df_with_rag(
+        dataset, 
+        q_plus, 
+        no_q_plus, 
+        retriever, 
+        model, 
+        tokenizer, 
+        adaptor_path, 
+        custom_args: CustomArguments, 
+        data_args: DataTrainingArguments
+    ):
+    test_dataset = []
+    def apply_lora(model, adaptor_path):
+        lora_model = PeftModel.from_pretrained(model, adaptor_path)
+        return lora_model
+
+    def remove_lora(model):
+        vanilla_model = model.merge_and_unload()
+        return vanilla_model
+
+    def rag_process(retriever, model, tokenizer, message, max_seq_length):
+        # model = remove_lora(model)
+        # tokenizer.chat_template = default_chat_template 
+        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, topk=2)
+        # model = apply_lora(model, adaptor)
+        # tokenizer.chat_template = custom_args.chat_template
+        return retrieved_contexts_summary
+
+    for i, row in tqdm(dataset.iterrows(), desc="[Ragging..]", total=len(dataset)):
+        choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(row["choices"])])
+        len_choices = len(row["choices"])
+
+        # <보기>가 있을 때
+        if row["question_plus"]:
+            user_message = q_plus.format(
+                plus_doc="None",
+                paragraph=row["paragraph"],
+                question=row["question"],
+                question_plus=row["question_plus"],
+                choices=choices_string,
+            )
+
+            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length)
+            
+            if retrieved_contexts_summary is not None:
+                user_message = q_plus.format(
+                    plus_doc=retrieved_contexts_summary,
+                    paragraph=row["paragraph"],
+                    question=row["question"],
+                    question_plus=row["question_plus"],
+                    choices=choices_string,
+                )
+
+        # <보기>가 없을 때
+        else:
+            user_message = no_q_plus.format(
+                paragraph=row["paragraph"],
+                plus_doc="None",
+                question=row["question"],
+                choices=choices_string,
+            )
+
+            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length)
+            
+            if retrieved_contexts_summary is not None:
+                user_message = q_plus.format(
+                    paragraph=row["paragraph"],
+                    plus_doc=retrieved_contexts_summary,
+                    question=row["question"],
+                    question_plus=row["question_plus"],
+                    choices=choices_string,
+                )
+
+        test_dataset.append(
+            {
+                "id": row["id"],
+                "messages": [
+                    {"role": "system", "content": "지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요."},
+                    {"role": "user", "content": user_message},
+                ],
+                "label": row["answer"],
+                "len_choices": len_choices,
+            }
+        )
+
+    return test_dataset
+
 
 def main(run_name, debug=False):
     parser = HfArgumentParser(
@@ -142,6 +229,7 @@ def main(run_name, debug=False):
     model_args, data_args, train_args, custom_args = parser.parse_args_into_dataclasses()
     model_name = None
     plus_prompt, no_plus_prompt = custom_args.prompt_question_plus, custom_args.prompt_no_question_plus
+    plus_prompt_rag, no_plus_prompt_rag = custom_args.prompt_question_plus_rag, custom_args.prompt_no_question_plus_rag
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
     wandb.init(
@@ -162,7 +250,7 @@ def main(run_name, debug=False):
 
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(5, random_state=SEED).reset_index(drop=True) if debug else dataset
+    dataset = dataset.sample(200, random_state=SEED).reset_index(drop=True) if debug else dataset
     df = record_to_df(dataset)
 
     quant = custom_args.quantization
@@ -205,20 +293,12 @@ def main(run_name, debug=False):
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
 
-    def apply_lora(model, adaptor_path):
-        lora_model = PeftModel.from_pretrained(model, adaptor_path)
-        return lora_model
-
-    def remove_lora(model):
-        vanilla_model = model.merge_and_unload()
-        return vanilla_model
-
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
         trust_remote_code=True,
     )
 
-    default_chat_template = tokenizer.chat_template
+    custom_args.peft_base_chat_template = tokenizer.chat_template
     tokenizer.chat_template = custom_args.chat_template
     peft_config = custom_args.peft_config
 
@@ -317,7 +397,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=1,
+                num_train_epochs=10,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -342,10 +422,6 @@ def main(run_name, debug=False):
             trainer.train()
 
         if train_args.do_predict:
-            test_df = pd.read_csv(data_args.test_dataset_name)
-            test_df = record_to_df(test_df)
-            test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
-            
             if custom_args.do_RAG:
                 retriever = HybridSearch(
                             tokenize_fn=tokenizer.tokenize,
@@ -356,28 +432,23 @@ def main(run_name, debug=False):
                 retriever.get_dense_embedding()
                 retriever.get_sparse_embedding()
 
+            test_df = pd.read_csv(data_args.test_dataset_name)
+            test_df = record_to_df(test_df)
+            if not custom_args.do_RAG:
+                test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
+            if custom_args.do_RAG:
+                test_dataset = test_df_to_process_df_with_rag(test_df, plus_prompt_rag, no_plus_prompt_rag, retriever, model, tokenizer, adaptor, custom_args, data_args)
+            
             infer_results = []
             pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
 
             model.to(DEVICE)
-            model = apply_lora(model, adaptor)
             model.eval()
             with torch.inference_mode():
                 for data in tqdm(test_dataset):
                     _id = data["id"]
                     messages = data["messages"]
                     len_choices = data["len_choices"]
-
-                    if custom_args.do_RAG:
-                        print(_id)
-                        model = remove_lora(model)
-                        tokenizer.chat_template = default_chat_template 
-                        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, messages, data_args.max_seq_length, topk=5)
-                        
-                        if retrieved_contexts_summary is not None:
-                            messages[-1]['content'] += retrieved_contexts_summary
-                        model = apply_lora(model, adaptor)
-                        tokenizer.chat_template = custom_args.chat_template
 
                     outputs = model(
                         tokenizer.apply_chat_template(

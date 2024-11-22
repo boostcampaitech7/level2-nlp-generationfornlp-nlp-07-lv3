@@ -53,9 +53,9 @@ def llm_summary(llm, tokenizer, retrieved_contexts, max_response_tokens):
 def llm_check(llm, tokenizer, query):
     device =  torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     prompt = (
-        f"다음은 수능 지문입니다. 다음과 같이 지문과 문제가 주어집니다.\n\n" 
-        f"{query}"
-        f"위의 지문과 문제를 바탕으로, 해당 지문를 가지고 문제와 보기를 확인해서 자력으로 대답이 가능하면 '필요하지않음'을 출력하고 불가능해서 rag가 필요하면 '필요함'을 추가적 설명 없이 출력하세요. 무조건 '필요하지않음' 과 '필요함' 중에서만 출력하여 답하시오.\n\n"
+        f"다음은 수능 지문입니다. RAG가 필요한지 자력으로 대답 가능한지 판별하시오.\n\n" 
+        f"'{query}'\n\n"
+        f"위의 지문과 문제를 바탕으로, RAG가 필요하면 '필요함'을 없으면 '필요하지않음'을 설명없이 출력하세요.\n\n"
     )   
     messages = [
         {"role": "system", 
@@ -88,21 +88,32 @@ def llm_check(llm, tokenizer, query):
         
     return result
 
+def truncation(tokenizer, contexts: str, max_response_tokens):
+    token_ids = tokenizer.encode(
+        contexts,
+        truncation=True,
+        max_length=max_response_tokens,
+        add_special_tokens=False 
+    )
+    truncated_context = tokenizer.decode(token_ids, skip_special_tokens=True)
+    return truncated_context
 
 def retrieve(retriever: retrieval, llm, tokenizer, messages, max_seq_length, topk: int=5):
-    prompt_tokens = len_of_tokens(tokenizer, ' '.join(message['content'] for message in messages))
+    prompt_tokens = len_of_tokens(tokenizer, messages)
     max_response_tokens = max_seq_length - (prompt_tokens + 20)
     if max_response_tokens < 0: 
-        print("max_response_tokens error")
+        print("[max_response_tokens error] max_response_tokens를 초과함")
         return None
 
-    query = [message['content'] for message in messages if message['role'] == 'user'][-1]
-    result = llm_check(llm, tokenizer, query)
+    query = messages
+    # result = llm_check(llm, tokenizer, query)
+    result = "필요함"
     print(query)
     print(f"[RAG가 필요한가?] {result}")
     if '필요함' in result:
         _ , contexts = retriever.retrieve(query, topk=topk)
-        summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
+        # summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
+        summary = truncation(tokenizer, ' '.join(contexts)[:], max_response_tokens)
         print(f"[RAG & Summary] {summary}")
         return summary
     elif '필요하지않음' in result:

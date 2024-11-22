@@ -15,7 +15,7 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default="yanolja/EEVE-Korean-Instruct-10.8B-v1.0"#"yanolja/EEVE-Korean-Instruct-10.8B-v1.0" #'beomi/gemma-ko-2b' #"Qwen/Qwen2.5-14B-Instruct"
+        default="Qwen/Qwen2.5-14B-Instruct" #"yanolja/EEVE-Korean-Instruct-10.8B-v1.0" #'beomi/gemma-ko-2b' #"Qwen/Qwen2.5-14B-Instruct"
     )
     train_test_split: Optional[float] = field(
         default=0.3,
@@ -43,7 +43,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=1024,
+        default=700,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
@@ -67,8 +67,8 @@ class CustomArguments:
         },
     )
     chat_template : Optional[str] = field(
-        default="{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<s>user\n' + content + '<|im_end|>\n<s>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}",
-        # default="{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}",
+        # default="{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<s>user\n' + content + '<|im_end|>\n<s>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}",
+        default="{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}",
         metadata={
             "help": "Chat template"
         },
@@ -85,9 +85,21 @@ class CustomArguments:
             "help": "Prompt no question plus"
         },
     )
+    prompt_question_plus_rag : Optional[str] = field(
+        default="참고문서:\n{plus_doc}\n\n지문:\n{paragraph}\n\n질문:\n{question}\n\n<보기>:\n{question_plus}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
+        metadata={
+            "help": "Prompt question plus"
+        },
+    )
+    prompt_no_question_plus_rag : Optional[str] = field(
+        default="참고문서:\n{plus_doc}\n\n지문:\n{paragraph}\n\n질문:\n{question}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
+        metadata={
+            "help": "Prompt no question plus"
+        },
+    )
     response_template : Optional[str] = field(
-        default="<s>model",
-        # default="<start_of_turn>model",
+        # default="<s>model",
+        default="<start_of_turn>model",
         metadata={
             "help": "Response template"
         },
@@ -125,13 +137,19 @@ class CustomArguments:
         },
     )
     do_RAG : Optional[bool] = field(
-        default=True,
+        default=False,
         metadata={
             "help": "RAG for pred"
         },
     )
     peft_base : Optional[str] = field(
         default="yanolja/EEVE-Korean-Instruct-10.8B-v1.0",
+        metadata={
+            "help": "peft base model"
+        },
+    )
+    peft_base_chat_template : Optional[str] = field(
+        default="",
         metadata={
             "help": "peft base model"
         },
