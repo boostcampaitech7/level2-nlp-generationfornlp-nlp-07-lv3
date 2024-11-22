@@ -31,7 +31,7 @@ def sperate_dataset(dataset: pd.DataFrame, length=length):
         dataset['paragraph'].apply(lambda x: len(x) <= length)]
 
 
-def get_llm_output(data_row, tokenizer, model, length=length):
+def get_llm_output(data_row, tokenizer, model):
     paragraph = data_row['paragraph']
     problems = ast.literal_eval(data_row['problems'])
 
