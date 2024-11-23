@@ -10,7 +10,8 @@ import numpy as np
 import evaluate
 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig, \
+    AutoConfig
 from datasets import Dataset
 from tqdm import tqdm
 from peft import AutoPeftModelForCausalLM
@@ -71,11 +72,18 @@ def main(run_name, debug=False):
     # Load model
     if train_args.do_train:
         model_name = model_args.model_name_or_path
+        config = AutoConfig.from_pretrained(model_name)
+        config.use_cache = False
+        config.max_position_embeddings = data_args.max_seq_length
+        config.num_hidden_layers = config.num_hidden_layers // 2
+
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
+            config=config,
             torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+            device_map="auto",
         )
 
     if not train_args.do_train:
@@ -165,6 +173,10 @@ def main(run_name, debug=False):
             # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
             tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= data_args.max_seq_length)
             tokenized_dataset = tokenized_dataset.train_test_split(test_size=model_args.train_test_split, seed=SEED)
+
+            # sort train, and test by length of input_ids desc
+            tokenized_dataset['train'] = tokenized_dataset['train'].sort("input_ids")
+            tokenized_dataset['test'] = tokenized_dataset['test'].sort("input_ids")
 
             train_dataset = tokenized_dataset['train']
             eval_dataset = tokenized_dataset['test']
