@@ -154,8 +154,8 @@ class CustomArguments:
             "help": "peft base model"
         },
     )
-    dense_model_name : Optional[list] = field(
-        default=['intfloat/multilingual-e5-large-instruct', "upskyy/bge-m3-korean"],
+    dense_model_name : Optional[str] = field(
+        default=intfloat/multilingual-e5-large-instruct',
         metadata={
             "help": "dense embedding models"
         }

@@ -386,9 +386,11 @@ def main(run_name, debug=False):
         model = apply_lora(model, adaptor)
 
     if custom_args.do_RAG:
+            dense_model_name = []
+            dense_model_name.append(custom_args.dense_model_name)#.append("upskyy/bge-m3-korean")
             retriever = HybridSearch(
                         tokenize_fn=tokenizer.tokenize,
-                        dense_model_name=custom_args.dense_model_name,
+                        dense_model_name=dense_model_name,
                         data_path=custom_args.RAG_dataset_path,
                         context_path=custom_args.RAG_context_path,
                     )
