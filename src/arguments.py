@@ -43,7 +43,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=1024,
+        default=700,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
@@ -169,6 +169,6 @@ class CustomArguments:
     RAG_context_path : Optinal[str] = field(
         default="wiki_documents_original.csv",
         metadata={
-            "help"; "contexts for RAG"
+            "help": "contexts for RAG"
         }
     )
