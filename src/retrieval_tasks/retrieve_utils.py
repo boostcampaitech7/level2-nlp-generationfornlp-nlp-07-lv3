@@ -100,7 +100,7 @@ def truncation(tokenizer, contexts: str, max_response_tokens):
 
 def retrieve(retriever: retrieval, llm, tokenizer, messages, max_seq_length, topk: int=5):
     prompt_tokens = len_of_tokens(tokenizer, messages)
-    max_response_tokens = max_seq_length - (prompt_tokens + 20)
+    max_response_tokens = max_seq_length - (prompt_tokens + 30)
     if max_response_tokens < 0: 
         print("[max_response_tokens error] max_response_tokens를 초과함")
         return None

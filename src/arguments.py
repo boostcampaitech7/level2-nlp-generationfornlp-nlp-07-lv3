@@ -43,7 +43,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=700,
+        default=1024,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
@@ -137,20 +137,38 @@ class CustomArguments:
         },
     )
     do_RAG : Optional[bool] = field(
-        default=False,
+        default=True,
         metadata={
             "help": "RAG for pred"
         },
     )
     peft_base : Optional[str] = field(
-        default="yanolja/EEVE-Korean-Instruct-10.8B-v1.0",
+        default="Qwen/Qwen2.5-14B-Instruct",
         metadata={
             "help": "peft base model"
         },
     )
     peft_base_chat_template : Optional[str] = field(
-        default="",
+        default=None,
         metadata={
             "help": "peft base model"
         },
+    )
+    dense_model_name : Optinal[list] = field(
+        default=['intfloat/multilingual-e5-large-instruct', "upskyy/bge-m3-korean"],
+        metadata={
+            "help": "dense embedding models"
+        }
+    )
+    RAG_dataset_path : Optinal[str] = field(
+        default="../data",
+        metadata={
+            "help": "The path of directory that stores contexts for RAG"
+        }
+    )
+    RAG_context_path : Optinal[str] = field(
+        default="wiki_documents_original.csv",
+        metadata={
+            "help"; "contexts for RAG"
+        }
     )
