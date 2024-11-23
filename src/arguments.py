@@ -155,7 +155,7 @@ class CustomArguments:
         },
     )
     dense_model_name : Optional[str] = field(
-        default=intfloat/multilingual-e5-large-instruct',
+        default='intfloat/multilingual-e5-large-instruct',
         metadata={
             "help": "dense embedding models"
         }
