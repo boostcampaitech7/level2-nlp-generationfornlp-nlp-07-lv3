@@ -154,19 +154,19 @@ class CustomArguments:
             "help": "peft base model"
         },
     )
-    dense_model_name : Optinal[list] = field(
+    dense_model_name : Optional[list] = field(
         default=['intfloat/multilingual-e5-large-instruct', "upskyy/bge-m3-korean"],
         metadata={
             "help": "dense embedding models"
         }
     )
-    RAG_dataset_path : Optinal[str] = field(
+    RAG_dataset_path : Optional[str] = field(
         default="../data",
         metadata={
             "help": "The path of directory that stores contexts for RAG"
         }
     )
-    RAG_context_path : Optinal[str] = field(
+    RAG_context_path : Optional[str] = field(
         default="wiki_documents_original.csv",
         metadata={
             "help": "contexts for RAG"
