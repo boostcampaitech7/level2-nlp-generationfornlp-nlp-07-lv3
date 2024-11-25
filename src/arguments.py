@@ -18,7 +18,7 @@ class ModelArguments:
         default='beomi/gemma-ko-2b',
     )
     train_test_split: Optional[float] = field(
-        default=0.3,
+        default=0.1,
         metadata={
             "help": "test_size"
         },
@@ -120,5 +120,17 @@ class CustomArguments:
         ),
         metadata={
             "help": "Quant 8 bit config"
+        },
+    )
+    optimize_flag : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "Optimize flag"
+        },
+    )
+    num_hidden_layers_ratio : Optional[float] = field(
+        default=1.0,
+        metadata={
+            "help": "Number of hidden layers"
         },
     )

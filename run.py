@@ -44,11 +44,11 @@ subprocess.run([
     "--do_eval",
     "--overwrite_output_dir",
     "--run_name", run_name,
-    "--quantization", "8",
+    "--quantization", "4",
 ], check=True)
 
 # Perform prediction (inference)
-#train_dir = "E:\ML\BoostClass AI Tech NLP the 7th\Git Repos\level2-nlp-generationfornlp-nlp-07-lv3\models\\train_exaone_768_6epoch_20241115_043237"
+#train_dir = os.path.join(root_dir, 'models', f'model_name_here')
 subprocess.run([
     "python", "main.py",
     "--output_dir", predict_dir,
