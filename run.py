@@ -33,7 +33,7 @@ run_name += "_" + current_time_str
 
 # Set up directories
 train_dir = os.path.join(root_dir, 'models', f'train_{run_name}')
-# train_dir = "/data/ephemeral/home/level2-nlp-generationfornlp-nlp-07-lv3/models/train_qwen1442_200_10_20241123_004500"
+# train_dir = "/data/ephemeral/home/level2-nlp-generationfornlp-nlp-07-lv3/models/train_qwen_augmented_20241124_061818"
 predict_dir = os.path.join(root_dir, 'output', f'test_{run_name}')
 predict_dataset_name = os.path.join(root_dir, 'data', 'test.csv')
 
@@ -56,5 +56,5 @@ subprocess.run([
     "--model_name_or_path", train_dir,
     "--do_predict",
     "--run_name", run_name,
-    "--quantization", "4",
+    # "--quantization", "8",
 ], check=True)

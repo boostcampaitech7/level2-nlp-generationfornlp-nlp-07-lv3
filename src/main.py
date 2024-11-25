@@ -436,6 +436,52 @@ def main(run_name, debug=False):
         load_from_cache_file=True,
         desc="Tokenizing",
     )
+ 
+ ##########################################################################################################
+    up = []
+    down = []
+    for i, row in tqdm(enumerate(tokenized_dataset), total=len(tokenized_dataset)):
+        q_plus, no_q_plus = plus_prompt_rag, no_plus_prompt_rag
+        choices_string = "\n".join([f"{idx + 1} - {choice}" for idx, choice in enumerate(dataset[i]["choices"])])
+
+        if dataset[i]["question_plus"]:
+            user_message = q_plus.format(
+                plus_doc="None",
+                paragraph=dataset[i]["paragraph"],
+                question=dataset[i]["question"],
+                question_plus=dataset[i]["question_plus"],
+                choices=choices_string,
+            )
+        else:
+            user_message = no_q_plus.format(
+                plus_doc="None",
+                paragraph=dataset[i]["paragraph"],
+                question=dataset[i]["question"],
+                choices=choices_string,
+            )
+
+        data = tokenizer.tokenize(user_message)
+        if len(data) <= data_args.max_seq_length:
+            down.append(
+                [len(data), len(row['input_ids'])]
+            )
+        else:
+            up.append(
+                [len(data), len(row['input_ids'])]
+            ) 
+
+    for val in up:
+        print(f"len of original: {val[0]}")
+        print(f"len of processed: {val[1]}\n")
+    
+    print("========================================")
+    
+    for val in down:
+        print(f"len of original: {val[0]}")
+        print(f"len of processed: {val[1]}\n")
+
+    print(len(down))
+ ##########################################################################################################
 
     # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
     mex_seq_len = data_args.max_seq_length
@@ -583,5 +629,5 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name, debug=True)
-    # main(argv_run_name)
+    # main(argv_run_name, debug=True)
+    main(argv_run_name)
