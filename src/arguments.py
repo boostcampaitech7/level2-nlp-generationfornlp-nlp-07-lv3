@@ -122,3 +122,15 @@ class CustomArguments:
             "help": "Quant 8 bit config"
         },
     )
+    optimize_flag : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "Optimize flag"
+        },
+    )
+    num_hidden_layers_ratio : Optional[float] = field(
+        default=1.0,
+        metadata={
+            "help": "Number of hidden layers"
+        },
+    )
