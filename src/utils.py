@@ -4,6 +4,8 @@ import numpy as np
 import torch
 
 from ast import literal_eval
+
+import transformers
 from datasets import Dataset
 
 def set_seed(seed: int = 42):
@@ -105,3 +107,10 @@ def test_df_to_process_df(dataset : pd.DataFrame, q_plus, no_q_plus) -> list:
         )
 
     return test_dataset
+
+def optimize_model(config : transformers.AutoConfig, data_args, custom_args):
+    config.use_cache = False
+    config.max_position_embeddings = data_args.max_seq_length
+    config.num_hidden_layers = int(custom_args.num_hidden_layers_ratio * config.num_hidden_layers)
+
+    return config

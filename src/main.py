@@ -1,23 +1,22 @@
 import os
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
-
 import sys
 import logging
-import torch
-import wandb
-import pandas as pd
-import numpy as np
-import evaluate
 
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
+from datasets import Dataset
+import evaluate
+import numpy as np
+import pandas as pd
+from peft import AutoPeftModelForCausalLM
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig, \
     AutoConfig
-from datasets import Dataset
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from tqdm import tqdm
-from peft import AutoPeftModelForCausalLM
+import wandb
 
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
-from utils import record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed
+from utils import record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model
 
 SEED = 42
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -25,7 +24,7 @@ parent_dir = os.path.dirname(os.getcwd())
 now = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
 
 pd.set_option('display.max_columns', None)
-os.environ["WANDB_MODE"] = "online"
+os.environ["WANDB_MODE"] = "offline"
 logger = logging.getLogger(__name__)
 
 def main(run_name, debug=False):
@@ -73,9 +72,7 @@ def main(run_name, debug=False):
     if train_args.do_train:
         model_name = model_args.model_name_or_path
         config = AutoConfig.from_pretrained(model_name)
-        config.use_cache = False
-        config.max_position_embeddings = data_args.max_seq_length
-        config.num_hidden_layers = config.num_hidden_layers // 2
+        config = optimize_model(config, data_args, custom_args) if custom_args.optimize_flag else config
 
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -173,10 +170,6 @@ def main(run_name, debug=False):
             # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다.
             tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) <= data_args.max_seq_length)
             tokenized_dataset = tokenized_dataset.train_test_split(test_size=model_args.train_test_split, seed=SEED)
-
-            # sort train, and test by length of input_ids desc
-            tokenized_dataset['train'] = tokenized_dataset['train'].sort("input_ids")
-            tokenized_dataset['test'] = tokenized_dataset['test'].sort("input_ids")
 
             train_dataset = tokenized_dataset['train']
             eval_dataset = tokenized_dataset['test']
