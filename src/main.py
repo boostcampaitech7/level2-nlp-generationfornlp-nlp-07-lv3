@@ -82,6 +82,9 @@ def main(run_name, debug=False):
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
             device_map="auto",
         )
+        
+        # 그래디언트 체크포인팅 활성화
+        model.gradient_checkpointing_enable()
 
     if not train_args.do_train:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
@@ -201,6 +204,7 @@ def main(run_name, debug=False):
                 save_total_limit=1,
                 save_only_model=True,
                 report_to="wandb",
+                gradient_checkpointing=True,  # 그래디언트 체크포인팅 활성화
             )
 
             trainer = SFTTrainer(
