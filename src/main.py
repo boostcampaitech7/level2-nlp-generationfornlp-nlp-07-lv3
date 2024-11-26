@@ -118,10 +118,10 @@ def train_df_to_process_df_with_rag(
     ):
     processed_dataset = []
 
-    def rag_process(retriever, model, tokenizer, message, max_seq_length):
+    def rag_process(retriever, model, tokenizer, message, max_seq_length, custom_args: CustomArguments):
         # model = remove_lora(model)
         # tokenizer.chat_template = default_chat_template 
-        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, topk=2)
+        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, custom_args ,topk=2)
         # model = apply_lora(model, adaptor_path)
         # tokenizer.chat_template = custom_args.chat_template
         return retrieved_contexts_summary
@@ -139,7 +139,7 @@ def train_df_to_process_df_with_rag(
                 choices=choices_string,
             )
 
-            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length)
+            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length, custom_args)
             
             if retrieved_contexts_summary is not None:
                 user_message = q_plus.format(
@@ -158,7 +158,7 @@ def train_df_to_process_df_with_rag(
                 choices=choices_string,
             )
 
-            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length)
+            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length, custom_args)
             
             if retrieved_contexts_summary is not None:
                 user_message = q_plus.format(
@@ -174,7 +174,7 @@ def train_df_to_process_df_with_rag(
             {
                 "id": dataset[i]["id"],
                 "messages": [
-                    {"role": "system", "content": "지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요."},
+                    {"role": "system", "content": custom_args.RAG_System_prompt},
                     {"role": "user", "content": user_message},
                     {"role": "assistant", "content": f"{dataset[i]['answer']}"}
                 ],
@@ -234,10 +234,10 @@ def test_df_to_process_df_with_rag(
     ):
     test_dataset = []
 
-    def rag_process(retriever, model, tokenizer, message, max_seq_length):
+    def rag_process(retriever, model, tokenizer, message, max_seq_length, custom_args: CustomArguments):
         # model = remove_lora(model)
         # tokenizer.chat_template = default_chat_template 
-        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, topk=2)
+        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, custom_args, topk=2)
         # model = apply_lora(model, adaptor_path)
         # tokenizer.chat_template = custom_args.chat_template
         return retrieved_contexts_summary
@@ -256,7 +256,7 @@ def test_df_to_process_df_with_rag(
                 choices=choices_string,
             )
 
-            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length)
+            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length, custom_args)
             
             if retrieved_contexts_summary is not None:
                 user_message = q_plus.format(
@@ -276,7 +276,7 @@ def test_df_to_process_df_with_rag(
                 choices=choices_string,
             )
 
-            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length)
+            retrieved_contexts_summary = rag_process(retriever, model, tokenizer, user_message, data_args.max_seq_length, custom_args)
             
             if retrieved_contexts_summary is not None:
                 user_message = q_plus.format(
@@ -291,7 +291,7 @@ def test_df_to_process_df_with_rag(
             {
                 "id": row["id"],
                 "messages": [
-                    {"role": "system", "content": "지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요."},
+                    {"role": "system", "content": custom_args.RAG_System_prompt},
                     {"role": "user", "content": user_message},
                 ],
                 "label": row["answer"],
@@ -541,7 +541,7 @@ def main(run_name, debug=False):
                 max_seq_length=mex_seq_len,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=3,
+                num_train_epochs=10,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -629,5 +629,5 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    # main(argv_run_name, debug=True)
-    main(argv_run_name)
+    main(argv_run_name, debug=True)
+    # main(argv_run_name)

@@ -6,6 +6,7 @@ import logging
 from datasets import Dataset, concatenate_datasets, load_from_disk
 from typing import List, Optional, Tuple, Union, NoReturn
 
+from arguments import CustomArguments
 from retrieval_tasks.retrieval import retrieval
 # from retrieval import retrieval
 # from retrieval_hybrid import HybridSearch
@@ -14,8 +15,20 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModel
 from transformers import BitsAndBytesConfig
 
 def len_of_tokens(tokenizer, context):
-        tokens = tokenizer.tokenize(context)
-        return len(tokens)
+    tokens = tokenizer.tokenize(context)
+    return len(tokens)
+
+def len_of_chat_template(tokenizer, custom_args: CustomArguments):
+    message = [
+                {"role": "system", "content": custom_args.RAG_System_prompt},
+                {"role": "user", "content": ""},
+                {"role": "assistant", "content": ""}
+            ]
+    template = tokenizer.apply_chat_template(
+                    message,
+                    tokenize=False,
+                )
+    return len_of_tokens(tokenizer, template)
 
 def llm_summary(llm, tokenizer, retrieved_contexts, max_response_tokens):
     device =  torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -98,11 +111,16 @@ def truncation(tokenizer, contexts: str, max_response_tokens):
     truncated_context = tokenizer.decode(token_ids, skip_special_tokens=True)
     return truncated_context
 
-def retrieve(retriever: retrieval, llm, tokenizer, messages, max_seq_length, topk: int=5):
+def retrieve(retriever: retrieval, llm, tokenizer, messages, max_seq_length, custom_args: CustomArguments, topk: int=5):
     prompt_tokens = len_of_tokens(tokenizer, messages)
-    max_response_tokens = max_seq_length - (prompt_tokens + 50)
+    chat_template_tokens = len_of_chat_template(tokenizer, custom_args) + 10
+    max_response_tokens = max_seq_length - (prompt_tokens + chat_template_tokens)
+    rag_response_threshold = prompt_tokens + chat_template_tokens
     if max_response_tokens < 0: 
         print("[max_response_tokens error] max_response_tokens를 초과함")
+        return None
+    if rag_response_threshold > 350:
+        print("[rag_response_threshold error] rag_response_threshold를 초과함")
         return None
 
     query = messages

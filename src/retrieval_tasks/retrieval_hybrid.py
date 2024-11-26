@@ -166,7 +166,8 @@ class HybridSearch(retrieval):
         if isinstance(sparse_score, torch.Tensor):
             sparse_score = sparse_score.detach().numpy()  
 
-        result = (1 - alpha) * dense_score + alpha * sparse_score
+        # result = (1 - alpha) * dense_score + alpha * sparse_score
+        result = dense_score
         return result
 
     def get_similarity_score(self, q_vec, c_vec):
@@ -271,10 +272,10 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--dataset_name", default="../data/train.csv", type=str)
-    parser.add_argument("--model_name_or_path", default="yanolja/EEVE-Korean-Instruct-10.8B-v1.0", type=str)
-    parser.add_argument("--data_path", default="../data", type=str)
-    parser.add_argument("--context_path", default="wiki_documents_original.csv", type=str)
+    parser.add_argument("--dataset_name", default="../../data/train.csv", type=str)
+    parser.add_argument("--model_name_or_path", default="Qwen/Qwen2.5-14B-Instruct", type=str)
+    parser.add_argument("--data_path", default="../../data", type=str)
+    parser.add_argument("--context_path", default="rag_aug_docs.csv", type=str)
     parser.add_argument("--use_faiss", default=False, type=bool)
 
     args = parser.parse_args()
@@ -285,57 +286,58 @@ if __name__ == "__main__":
     retriever = HybridSearch(
         tokenize_fn=tokenizer.tokenize,
         dense_model_name=['intfloat/multilingual-e5-large-instruct'],  #"upskyy/bge-m3-korean",
+        data_path=args.data_path,
         context_path=args.context_path,
     )
     retriever.get_dense_embedding()
     retriever.get_sparse_embedding()
 
-    # query = ""
+    # # query = ""
 
-    # with timer("single query by exhaustive search using hybrid search"):
-    #     # scores, contexts = retriever.retrieve(query, topk=5, alpha=0.0060115995634538455)
-    #      scores, contexts = retriever.retrieve(query, topk=1, alpha=0)
+    # # with timer("single query by exhaustive search using hybrid search"):
+    # #     # scores, contexts = retriever.retrieve(query, topk=5, alpha=0.0060115995634538455)
+    # #      scores, contexts = retriever.retrieve(query, topk=1, alpha=0)
    
-    # for i, context in enumerate(contexts):
-    #     logging.info(f"Top-{i + 1} 의 문서")
-    #     logging.info("---------------------------------------------")
-    #     logging.info(context)
+    # # for i, context in enumerate(contexts):
+    # #     logging.info(f"Top-{i + 1} 의 문서")
+    # #     logging.info("---------------------------------------------")
+    # #     logging.info(context)
 
-    with open("../data/train.csv", 'r') as f:
-        train = pd.read_csv(f)
+    # with open("../data/train.csv", 'r') as f:
+    #     train = pd.read_csv(f)
     
-    with open("../data/test.csv", "r") as f:
-        test = pd.read_csv(f)
+    # with open("../data/test.csv", "r") as f:
+    #     test = pd.read_csv(f)
     
-    train_modified_row = []
-    train_modifeid_idx = []
-    for idx, row in tqdm(train.iterrows(), desc='[train rag]', total=len(train)):
-        if len(row['paragraph']) > 500: continue
-        if len(row['paragraph']) <= 500:
-            query = row['paragraph'] + row['problems']
-            scores, context = retriever.retrieve(query, topk=1, alpha=0)
+    # train_modified_row = []
+    # train_modifeid_idx = []
+    # for idx, row in tqdm(train.iterrows(), desc='[train rag]', total=len(train)):
+    #     if len(row['paragraph']) > 500: continue
+    #     if len(row['paragraph']) <= 500:
+    #         query = row['paragraph'] + row['problems']
+    #         scores, context = retriever.retrieve(query, topk=1, alpha=0)
 
-            row['paragraph'] = row['paragraph'] + context[0]
-            train_modified_row.append(row)
-            train_modifeid_idx.append(idx)
+    #         row['paragraph'] = row['paragraph'] + context[0]
+    #         train_modified_row.append(row)
+    #         train_modifeid_idx.append(idx)
     
-    train.drop(train_modifeid_idx, in_place=True)
-    train = pd.concat([train, pd.DataFrame(train_modified_row)], reset_index=True)
+    # train.drop(train_modifeid_idx, in_place=True)
+    # train = pd.concat([train, pd.DataFrame(train_modified_row)], reset_index=True)
      
-    test_modified_row = []
-    test_modifeid_idx = []
-    for idx, row in tqdm(test.iterrows(), desc='[test rag]', total=len(test)):
-        if len(row['paragraph']) > 500: continue
-        if len(row['paragraph']) <= 500:
-            query = row['paragraph'] + row['problems']
-            scores, context = retriever.retrieve(query, topk=1, alpha=0)
+    # test_modified_row = []
+    # test_modifeid_idx = []
+    # for idx, row in tqdm(test.iterrows(), desc='[test rag]', total=len(test)):
+    #     if len(row['paragraph']) > 500: continue
+    #     if len(row['paragraph']) <= 500:
+    #         query = row['paragraph'] + row['problems']
+    #         scores, context = retriever.retrieve(query, topk=1, alpha=0)
 
-            row['paragraph'] = row['paragraph'] + context[0]
-            test_modified_row.append(row)
-            test_modifeid_idx.append(idx)
+    #         row['paragraph'] = row['paragraph'] + context[0]
+    #         test_modified_row.append(row)
+    #         test_modifeid_idx.append(idx)
     
-    test.drop(test_modifeid_idx, in_place=True)
-    test = pd.concat([test, pd.DataFrame(test_modified_row)], reset_index=True)
+    # test.drop(test_modifeid_idx, in_place=True)
+    # test = pd.concat([test, pd.DataFrame(test_modified_row)], reset_index=True)
     
-    train.to_csv('../data/rag_train.csv', encoding='utf-8-sig', index=False)
-    test.to_csv('../data/rag_test.csv', encoding='utf-8-sig', index=False)
+    # train.to_csv('../data/rag_train.csv', encoding='utf-8-sig', index=False)
+    # test.to_csv('../data/rag_test.csv', encoding='utf-8-sig', index=False)
