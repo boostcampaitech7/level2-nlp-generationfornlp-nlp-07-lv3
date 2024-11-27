@@ -53,7 +53,7 @@ def ensemble_by_softmax():
     output_root_dir_ = os.listdir(os.path.join(output_root_dir, 'softmax'))
     output_root_dir_.remove('.gitkeep')
 
-    test_df = pd.read_csv(os.path.join(parent_dir, 'data', 'testtest.csv'))
+    test_df = pd.read_csv(os.path.join(parent_dir, 'data', 'test.csv'))
 
     test_df = record_to_df(test_df)
     test_dataset = test_df_to_process_df(test_df, CustomArguments.prompt_question_plus, CustomArguments.prompt_no_question_plus)
