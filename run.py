@@ -32,21 +32,21 @@ while run_name == '':
 run_name += "_" + current_time_str
 
 # Set up directories
-# train_dir = os.path.join(root_dir, 'models', f'train_{run_name}')
-train_dir = "/data/ephemeral/home/level2-nlp-generationfornlp-nlp-07-lv3/models/train_qwen14_rag_under350_20241126_181151"
+train_dir = os.path.join(root_dir, 'models', f'train_{run_name}')
+# train_dir = "/data/ephemeral/home/level2-nlp-generationfornlp-nlp-07-lv3/models/train_qwen14_rag_under350_20241126_181151"
 predict_dir = os.path.join(root_dir, 'output', f'test_{run_name}')
 predict_dataset_name = os.path.join(root_dir, 'data', 'test.csv')
 
 # Perform training
-# subprocess.run([
-#     "python", "main.py",
-#     "--output_dir", train_dir,
-#     "--do_train",
-#     "--do_eval",
-#     "--overwrite_output_dir",
-#     "--run_name", run_name,
-#     "--quantization", "4",
-# ], check=True)
+subprocess.run([
+    "python", "main.py",
+    "--output_dir", train_dir,
+    "--do_train",
+    "--do_eval",
+    "--overwrite_output_dir",
+    "--run_name", run_name,
+    "--quantization", "4",
+], check=True)
 
 # Perform prediction (inference)
 subprocess.run([

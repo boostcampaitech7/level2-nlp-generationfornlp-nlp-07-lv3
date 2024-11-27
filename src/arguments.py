@@ -167,7 +167,7 @@ class CustomArguments:
         }
     )
     RAG_context_path : Optional[str] = field(
-        default="wiki_documents_original.csv", #"rag_aug_docs.csv",
+        default="rag_aug_docs_mini.csv", #"wiki_documents_original.csv", #"rag_aug_docs.csv",
         metadata={
             "help": "contexts for RAG"
         }

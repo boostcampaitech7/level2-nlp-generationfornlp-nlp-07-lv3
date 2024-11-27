@@ -275,7 +275,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_name", default="../../data/train.csv", type=str)
     parser.add_argument("--model_name_or_path", default="Qwen/Qwen2.5-14B-Instruct", type=str)
     parser.add_argument("--data_path", default="../../data", type=str)
-    parser.add_argument("--context_path", default="rag_aug_docs.csv", type=str)
+    parser.add_argument("--context_path", default="rag_aug_docs_mini.csv", type=str)
     parser.add_argument("--use_faiss", default=False, type=bool)
 
     args = parser.parse_args()
@@ -292,16 +292,16 @@ if __name__ == "__main__":
     retriever.get_dense_embedding()
     retriever.get_sparse_embedding()
 
-    # # query = ""
+    query = "명량 대첩은 1597년 임진왜란 당시 이순신 장군이 12척의 배로 약 330척의 왜군 함대를 상대로 승리를 거둔 전투입니다. 이순신은 명량해협의 좁은 물길과 빠른 물살을 활용하여 왜군의 대규모 함선을 효과적으로 제압했습니다. 이는 병력 열세 속에서도 뛰어난 전략과 지휘력을 통해 이뤄낸 전승으로, 조선의 사기를 크게 북돋우고 전쟁의 전환점을 마련한 역사적 전투입니다."
 
-    # # with timer("single query by exhaustive search using hybrid search"):
-    # #     # scores, contexts = retriever.retrieve(query, topk=5, alpha=0.0060115995634538455)
-    # #      scores, contexts = retriever.retrieve(query, topk=1, alpha=0)
+    with timer("single query by exhaustive search using hybrid search"):
+        # scores, contexts = retriever.retrieve(query, topk=5, alpha=0.0060115995634538455)
+         scores, contexts = retriever.retrieve(query, topk=5, alpha=0)
    
-    # # for i, context in enumerate(contexts):
-    # #     logging.info(f"Top-{i + 1} 의 문서")
-    # #     logging.info("---------------------------------------------")
-    # #     logging.info(context)
+    for i, context in enumerate(contexts):
+        logging.info(f"Top-{i + 1} 의 문서")
+        logging.info("---------------------------------------------")
+        logging.info(context)
 
     # with open("../data/train.csv", 'r') as f:
     #     train = pd.read_csv(f)
