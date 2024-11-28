@@ -131,3 +131,106 @@ CSAT-Solver/
 ├── README.md
 └── run.py                  # 실행 파일
 ```
+
+## streamlit_app.py 설명
+
+Streamlit 기반의 EDA 제공
+
+- 패턴 기반 ID 조회
+- 전체 데이터셋 표시
+- 길이 분포 시각화
+- 토큰화된 길이 분포 시각화
+- 채팅 템플릿 적용 후 토큰화 길이 분포
+- 답변 분포 표시
+
+---
+
+<h2 id="english">English</h2>
+
+`CSAT-Solver` is a project designed to solve questions from the Korean College Scholastic Ability Test (CSAT) using advanced language models. This project applies fine-tuning techniques to large language models to improve performance on typical multiple-choice questions in the CSAT.
+
+## Project Duration
+
+November 11 (Monday) 10:00 AM ~ November 28 (Thursday) 7:00 PM
+
+## Setup and Usage
+
+#### 1. Install required libraries using requirements.txt
+
+```bash
+pip install -r requirements.txt
+```
+
+#### 2. Place training and test datasets in the `data` directory
+
+#### 3. Set various arguments in `arguments.py` such as model name, max sequence length, chat template, etc.
+
+```py
+@dataclass
+class ModelArguments:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
+    model_name_or_path: str = field(
+        default='beomi/gemma-ko-2b', # Model to use
+    )
+    train_test_split: Optional[float] = field(
+        default=0.1,
+        metadata={
+            "help": "test_size"
+        },
+    )
+    .
+    .
+    .
+```
+
+#### 4. Run the `run.py` script to start the training and inference process
+
+```bash
+python run.py
+```
+
+## Key Features
+
+- Fine-tuning of pre-trained language models (e.g., Gemma-ko-2b)
+- Support for 4-bit and 8-bit quantization
+- Custom data processing for CSAT-style questions
+- Training and evaluation pipeline
+- Inference on test datasets
+- Integration with Weights & Biases for experiment tracking
+
+## Project Structure
+
+```plaintext
+CSAT-Solver/
+│
+├── data/
+│ ├── train.csv
+│ └── test.csv
+│
+├── models/                 # Directory for storing LoRA trained adapters
+│
+├── output/                 # Directory for storing inference results on test.csv
+│
+├── src/
+│   ├── arguments.py        # Various arguments needed for training
+│   ├── utils.py            # Seed fixing and dataset conversion to chat message format
+│   ├── streamlit_app.py    # EDA
+│   └── main.py             # Model training and inference
+│
+├── requirements.txt
+├── README.md
+└── run.py                  # Execution file
+```
+
+## streamlit_app.py explanation
+
+Provides Streamlit-based Exploratory Data Analysis (EDA)
+
+- Pattern-based ID lookup
+- Display of the entire dataset
+- Visualization of length distribution
+- Visualization of tokenized length distribution
+- Distribution of tokenized lengths after applying chat template
+- Display of answer distribution
