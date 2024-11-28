@@ -12,3 +12,4 @@ models/*
 output/*
 !output/.gitkeep
 test
+*.ipynb

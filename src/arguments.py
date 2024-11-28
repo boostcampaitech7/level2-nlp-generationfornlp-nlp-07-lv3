@@ -15,7 +15,7 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default='beomi/gemma-ko-2b',
+        default='Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4',
     )
     train_test_split: Optional[float] = field(
         default=0.1,
@@ -31,7 +31,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     dataset_name: Optional[str] = field(
-        default=os.path.join(data_dir, 'train.csv'),
+        default=os.path.join(data_dir, 'train+facebook.csv'),
         metadata={
             "help": "The name of the dataset to use."
         },
@@ -43,7 +43,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=512,
+        default=700,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
@@ -73,13 +73,13 @@ class CustomArguments:
         },
     )
     prompt_question_plus : Optional[str] = field(
-        default="지문:\n{paragraph}\n\n질문:\n{question}\n\n<보기>:\n{question_plus}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
+        default="지문:\n{paragraph}\n\n질문:\n{question}\n\n<보기>:\n{question_plus}\n\n선택지:\n{choices}\n\n단계별로 생각하여 1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
         metadata={
             "help": "Prompt question plus"
         },
     )
     prompt_no_question_plus : Optional[str] = field(
-        default="지문:\n{paragraph}\n\n질문:\n{question}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
+        default="지문:\n{paragraph}\n\n질문:\n{question}\n\n선택지:\n{choices}\n\n단계별로 생각하여 1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
         metadata={
             "help": "Prompt no question plus"
         },

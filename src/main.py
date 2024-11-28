@@ -14,11 +14,13 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, 
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from tqdm import tqdm
 import wandb
-
+from accelerate import init_empty_weights, infer_auto_device_map
+from accelerate import load_checkpoint_and_dispatch
+from peft import PeftModel
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 from utils import record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model
 
-SEED = 42
+SEED = 2024
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 parent_dir = os.path.dirname(os.getcwd())
 now = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
@@ -56,8 +58,8 @@ def main(run_name, debug=False):
 
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
-    dataset.to_csv(parent_dir, 'data', f"sampled_dataset_{now}.csv") if debug else None
+    dataset = dataset.sample(800, random_state=SEED).reset_index(drop=True) if debug else dataset
+    # dataset.to_csv(parent_dir, 'data', f"sampled_dataset_{now}.csv") if debug else None
 
     df = record_to_df(dataset)
 
@@ -73,15 +75,25 @@ def main(run_name, debug=False):
         model_name = model_args.model_name_or_path
         config = AutoConfig.from_pretrained(model_name)
         config = optimize_model(config, data_args, custom_args) if custom_args.optimize_flag else config
-
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            config=config,
-            torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            torch_dtype='auto',
             trust_remote_code=True,
-            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+            # quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
             device_map="auto",
+            offload_folder="./offload",
+            offload_buffers=True
         )
+
+        # model = AutoModelForCausalLM.from_pretrained(
+        #     model_name,
+        #     config=config,
+        #     torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
+        #     trust_remote_code=True,
+        #     quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        #     device_map="auto",
+        #     offload_folder="./offload",
+        # )
         
         # 그래디언트 체크포인팅 활성화
         model.gradient_checkpointing_enable()
@@ -89,12 +101,60 @@ def main(run_name, debug=False):
     if not train_args.do_train:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
+        # model_name = model_args.model_name_or_path
+        # model = AutoPeftModelForCausalLM.from_pretrained(
+        #     model_name,
+        #     torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
+        #     trust_remote_code=True,
+        #     quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        #     device_map="auto",
+        #     offload_folder="./offload",
+        # )
+
+        # config = AutoConfig.from_pretrained(model_name)
+        # with init_empty_weights():
+            # model = AutoModelForCausalLM.from_pretrained(model_name)
+        max_memory = {
+            "cpu": "60GB",  # CPU에서 사용할 최대 메모리
+            0: "30GB"  # GPU에서 사용할 최대 메모리 (31.74 GiB보다 조금 낮게 설정)
+        }
+
+        # 베이스 모델의 가중치 로드
         model = AutoPeftModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
-            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+            torch_dtype=torch.float16,
+            device_map='auto',
+            max_memory=max_memory
         )
+
+        # max_memory = {
+        #     "cpu": "60GB",  # CPU에서 사용할 최대 메모리
+        #     0: "30GB"  # GPU에서 사용할 최대 메모리 (31.74 GiB보다 조금 낮게 설정)
+        # }
+        # model = load_checkpoint_and_dispatch(
+        #     model, device_map="auto", max_memory=max_memory
+        # )
+        # model = AutoPeftModelForCausalLM.from_pretrained(
+        #     model_name,
+        #     torch_dtype='auto',
+        #     trust_remote_code=True,
+        #     # quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        #     device_map="auto",
+        #     offload_folder="./offload",
+        #     offload_buffers=True,
+        #     max_memory=max_memory
+        # )
+        # model = AutoModelForCausalLM.from_pretrained(
+        #     model_name,
+        #     torch_dtype='auto',
+        #     trust_remote_code=True,
+        #     # quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        #     device_map="auto",
+        #     offload_folder="./offload",
+        #     offload_buffers=True,
+        #     max_memory=max_memory
+        # )
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
@@ -195,7 +255,7 @@ def main(run_name, debug=False):
                 max_seq_length=data_args.max_seq_length,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=3,
+                num_train_epochs=5,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -228,7 +288,7 @@ def main(run_name, debug=False):
             infer_results = []
             pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
 
-            model.to(DEVICE)
+            # model.to(DEVICE)
             model.eval()
             with torch.inference_mode():
                 for data in tqdm(test_dataset):
@@ -281,4 +341,5 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name)
+    main(argv_run_name, debug=True)
+    # main(argv_run_name)
