@@ -15,10 +15,10 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default="Qwen/Qwen2.5-14B-Instruct" #"yanolja/EEVE-Korean-Instruct-10.8B-v1.0" #'beomi/gemma-ko-2b' #"Qwen/Qwen2.5-14B-Instruct"
+        default='beomi/gemma-ko-2b'
     )
     train_test_split: Optional[float] = field(
-        default=0.3,
+        default=0.1,
         metadata={
             "help": "test_size"
         },
@@ -143,7 +143,7 @@ class CustomArguments:
         },
     )
     peft_base : Optional[str] = field(
-        default="Qwen/Qwen2.5-14B-Instruct", #"yanolja/EEVE-Korean-Instruct-10.8B-v1.0"
+        default='beomi/gemma-ko-2b',
         metadata={
             "help": "peft base model"
         },
@@ -167,7 +167,7 @@ class CustomArguments:
         }
     )
     RAG_context_path : Optional[str] = field(
-        default="rag_aug_docs_mini.csv", #"wiki_documents_original.csv", #"rag_aug_docs.csv",
+        default="wiki_documents_original.csv", 
         metadata={
             "help": "contexts for RAG"
         }
@@ -177,4 +177,16 @@ class CustomArguments:
         metadata={
             "help": "system prompt for RAG"
         }
+    )
+    optimize_flag : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "Optimize flag"
+        },
+    )
+    num_hidden_layers_ratio : Optional[float] = field(
+        default=1.0,
+        metadata={
+            "help": "Number of hidden layers"
+        },
     )

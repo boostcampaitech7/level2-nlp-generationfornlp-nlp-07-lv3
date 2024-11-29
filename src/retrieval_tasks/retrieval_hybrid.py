@@ -166,8 +166,7 @@ class HybridSearch(retrieval):
         if isinstance(sparse_score, torch.Tensor):
             sparse_score = sparse_score.detach().numpy()  
 
-        # result = (1 - alpha) * dense_score + alpha * sparse_score
-        result = dense_score
+        result = (1 - alpha) * dense_score + alpha * sparse_score
         return result
 
     def get_similarity_score(self, q_vec, c_vec):
@@ -295,7 +294,6 @@ if __name__ == "__main__":
     query = "명량 대첩은 1597년 임진왜란 당시 이순신 장군이 12척의 배로 약 330척의 왜군 함대를 상대로 승리를 거둔 전투입니다. 이순신은 명량해협의 좁은 물길과 빠른 물살을 활용하여 왜군의 대규모 함선을 효과적으로 제압했습니다. 이는 병력 열세 속에서도 뛰어난 전략과 지휘력을 통해 이뤄낸 전승으로, 조선의 사기를 크게 북돋우고 전쟁의 전환점을 마련한 역사적 전투입니다."
 
     with timer("single query by exhaustive search using hybrid search"):
-        # scores, contexts = retriever.retrieve(query, topk=5, alpha=0.0060115995634538455)
          scores, contexts = retriever.retrieve(query, topk=5, alpha=0)
    
     for i, context in enumerate(contexts):
@@ -303,41 +301,4 @@ if __name__ == "__main__":
         logging.info("---------------------------------------------")
         logging.info(context)
 
-    # with open("../data/train.csv", 'r') as f:
-    #     train = pd.read_csv(f)
     
-    # with open("../data/test.csv", "r") as f:
-    #     test = pd.read_csv(f)
-    
-    # train_modified_row = []
-    # train_modifeid_idx = []
-    # for idx, row in tqdm(train.iterrows(), desc='[train rag]', total=len(train)):
-    #     if len(row['paragraph']) > 500: continue
-    #     if len(row['paragraph']) <= 500:
-    #         query = row['paragraph'] + row['problems']
-    #         scores, context = retriever.retrieve(query, topk=1, alpha=0)
-
-    #         row['paragraph'] = row['paragraph'] + context[0]
-    #         train_modified_row.append(row)
-    #         train_modifeid_idx.append(idx)
-    
-    # train.drop(train_modifeid_idx, in_place=True)
-    # train = pd.concat([train, pd.DataFrame(train_modified_row)], reset_index=True)
-     
-    # test_modified_row = []
-    # test_modifeid_idx = []
-    # for idx, row in tqdm(test.iterrows(), desc='[test rag]', total=len(test)):
-    #     if len(row['paragraph']) > 500: continue
-    #     if len(row['paragraph']) <= 500:
-    #         query = row['paragraph'] + row['problems']
-    #         scores, context = retriever.retrieve(query, topk=1, alpha=0)
-
-    #         row['paragraph'] = row['paragraph'] + context[0]
-    #         test_modified_row.append(row)
-    #         test_modifeid_idx.append(idx)
-    
-    # test.drop(test_modifeid_idx, in_place=True)
-    # test = pd.concat([test, pd.DataFrame(test_modified_row)], reset_index=True)
-    
-    # train.to_csv('../data/rag_train.csv', encoding='utf-8-sig', index=False)
-    # test.to_csv('../data/rag_test.csv', encoding='utf-8-sig', index=False)
