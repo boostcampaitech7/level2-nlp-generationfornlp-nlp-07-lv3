@@ -19,4 +19,8 @@ ensemble/voting/*
 ensemble/softmax/*
 !ensemble/softmax/.gitkeep
 
+img/*
+!img/.gitkeep
+!img/*.png
+
 test
