@@ -84,7 +84,8 @@ def main(run_name, debug=False):
         )
         
         # 그래디언트 체크포인팅 활성화
-        model.gradient_checkpointing_enable()
+        if custom_args.gc_flag:
+            model.gradient_checkpointing_enable()
 
     if not train_args.do_train:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
@@ -204,7 +205,7 @@ def main(run_name, debug=False):
                 save_total_limit=1,
                 save_only_model=True,
                 report_to="wandb",
-                gradient_checkpointing=True,  # 그래디언트 체크포인팅 활성화
+                gradient_checkpointing=custom_args.gc_flag,  # 그래디언트 체크포인팅 활성화
             )
 
             trainer = SFTTrainer(

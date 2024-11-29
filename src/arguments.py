@@ -128,6 +128,12 @@ class CustomArguments:
             "help": "Optimize flag"
         },
     )
+    gc_flag : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "Gradient Checkpoint flag"
+        },
+    )
     num_hidden_layers_ratio : Optional[float] = field(
         default=1.0,
         metadata={

@@ -18,4 +18,12 @@ models/*
 !models/.gitkeep
 output/*
 !output/.gitkeep
+
+ensemble/ensemble_results/*
+!ensemble/ensemble_results/.gitkeep
+ensemble/voting/*
+!ensemble/voting/.gitkeep
+ensemble/softmax/*
+!ensemble/softmax/.gitkeep
+
 test
