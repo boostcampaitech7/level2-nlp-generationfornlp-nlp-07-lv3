@@ -4,6 +4,13 @@ __pycache__
 wandb
 src/wandb
 
+ensemble/ensemble_results/*
+!ensemble/ensemble_results/.gitkeep
+ensemble/voting/*
+!ensemble/voting/.gitkeep
+ensemble/softmax/*
+!ensemble/softmax/.gitkeep
+
 code
 data/*
 !data/.gitkeep
