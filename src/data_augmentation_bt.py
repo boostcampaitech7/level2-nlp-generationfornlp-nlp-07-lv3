@@ -6,6 +6,7 @@ from tqdm import tqdm  # For progress visualization
 
 # Initialize translator
 translator = Translator()
+CHOICE_LENGTH_THRESHOLD = 16
 
 # Function to load and process the dataset
 def load_data(file_path):
@@ -58,8 +59,8 @@ def process_data(file_path, output_path):
         # Back-translate question for all rows
         augmented_problems['question'] = back_translate(original_problems['question'])
 
-        # Back-translate choices only if average length > 16
-        if row['average_choice_length'] > 16:
+        # Back-translate choices only if average length > CHOICE_LENGTH_THRESHOLD
+        if row['average_choice_length'] > CHOICE_LENGTH_THRESHOLD:
             augmented_problems['choices'] = [back_translate(choice) for choice in original_problems['choices']]
         else:
             augmented_problems['choices'] = original_problems['choices']
