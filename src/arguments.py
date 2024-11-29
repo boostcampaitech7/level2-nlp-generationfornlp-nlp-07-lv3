@@ -15,10 +15,11 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
     model_name_or_path: str = field(
-        default='beomi/gemma-ko-2b'
+        #default='beomi/gemma-ko-2b',
+        default='Qwen/Qwen2.5-32B-Instruct',
     )
     train_test_split: Optional[float] = field(
-        default=0.1,
+        default=0.3,
         metadata={
             "help": "test_size"
         },
@@ -43,7 +44,7 @@ class DataTrainingArguments:
         },
     )
     max_seq_length: int = field(
-        default=700,
+        default=768,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
             "than this will be truncated, sequences shorter will be padded."
@@ -109,7 +110,7 @@ class CustomArguments:
             r=6,
             lora_alpha=8,
             lora_dropout=0.05,
-            target_modules=['q_proj', 'k_proj'],
+            target_modules=['q_proj', 'k_proj', 'v_proj'],
             bias="none",
             task_type="CAUSAL_LM",
         ),
@@ -182,6 +183,12 @@ class CustomArguments:
         default=True,
         metadata={
             "help": "Optimize flag"
+        },
+    )
+    gc_flag : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "Gradient Checkpoint flag"
         },
     )
     num_hidden_layers_ratio : Optional[float] = field(
