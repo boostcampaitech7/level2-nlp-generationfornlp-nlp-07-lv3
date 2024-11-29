@@ -84,16 +84,6 @@ def main(run_name, debug=False):
             offload_folder="./offload",
             offload_buffers=True
         )
-
-        # model = AutoModelForCausalLM.from_pretrained(
-        #     model_name,
-        #     config=config,
-        #     torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
-        #     trust_remote_code=True,
-        #     quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
-        #     device_map="auto",
-        #     offload_folder="./offload",
-        # )
         
         # 그래디언트 체크포인팅 활성화
         model.gradient_checkpointing_enable()
@@ -101,60 +91,20 @@ def main(run_name, debug=False):
     if not train_args.do_train:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
-        # model_name = model_args.model_name_or_path
-        # model = AutoPeftModelForCausalLM.from_pretrained(
-        #     model_name,
-        #     torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
-        #     trust_remote_code=True,
-        #     quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
-        #     device_map="auto",
-        #     offload_folder="./offload",
-        # )
 
-        # config = AutoConfig.from_pretrained(model_name)
-        # with init_empty_weights():
-            # model = AutoModelForCausalLM.from_pretrained(model_name)
         max_memory = {
             "cpu": "60GB",  # CPU에서 사용할 최대 메모리
             0: "30GB"  # GPU에서 사용할 최대 메모리 (31.74 GiB보다 조금 낮게 설정)
         }
-
-        # 베이스 모델의 가중치 로드
-        model = AutoPeftModelForCausalLM.from_pretrained(
+        model = AutoModelForCausalLM.from_pretrained(
             model_name,
+            torch_dtype='auto',
             trust_remote_code=True,
-            torch_dtype=torch.float16,
-            device_map='auto',
+            device_map="auto",
+            offload_folder="./offload",
+            offload_buffers=True,
             max_memory=max_memory
         )
-
-        # max_memory = {
-        #     "cpu": "60GB",  # CPU에서 사용할 최대 메모리
-        #     0: "30GB"  # GPU에서 사용할 최대 메모리 (31.74 GiB보다 조금 낮게 설정)
-        # }
-        # model = load_checkpoint_and_dispatch(
-        #     model, device_map="auto", max_memory=max_memory
-        # )
-        # model = AutoPeftModelForCausalLM.from_pretrained(
-        #     model_name,
-        #     torch_dtype='auto',
-        #     trust_remote_code=True,
-        #     # quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
-        #     device_map="auto",
-        #     offload_folder="./offload",
-        #     offload_buffers=True,
-        #     max_memory=max_memory
-        # )
-        # model = AutoModelForCausalLM.from_pretrained(
-        #     model_name,
-        #     torch_dtype='auto',
-        #     trust_remote_code=True,
-        #     # quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
-        #     device_map="auto",
-        #     offload_folder="./offload",
-        #     offload_buffers=True,
-        #     max_memory=max_memory
-        # )
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
