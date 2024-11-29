@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 import transformers
 from datasets import Dataset
+from peft import PeftModel
 
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 from retrieval_tasks.retrieval_hybrid import HybridSearch
