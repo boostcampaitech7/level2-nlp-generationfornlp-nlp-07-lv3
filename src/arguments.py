@@ -68,6 +68,7 @@ class CustomArguments:
         },
     )
     chat_template : Optional[str] = field(
+        # default="{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<s>user\n' + content + '<|im_end|>\n<s>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}",
         default="{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}",
         metadata={
             "help": "Chat template"
@@ -85,7 +86,20 @@ class CustomArguments:
             "help": "Prompt no question plus"
         },
     )
+    prompt_question_plus_rag : Optional[str] = field(
+        default="참고문서:\n{plus_doc}\n\n지문:\n{paragraph}\n\n질문:\n{question}\n\n<보기>:\n{question_plus}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
+        metadata={
+            "help": "Prompt question plus"
+        },
+    )
+    prompt_no_question_plus_rag : Optional[str] = field(
+        default="참고문서:\n{plus_doc}\n\n지문:\n{paragraph}\n\n질문:\n{question}\n\n선택지:\n{choices}\n\n1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.\n정답:",
+        metadata={
+            "help": "Prompt no question plus"
+        },
+    )
     response_template : Optional[str] = field(
+        # default="<s>model",
         default="<start_of_turn>model",
         metadata={
             "help": "Response template"
@@ -122,6 +136,48 @@ class CustomArguments:
         metadata={
             "help": "Quant 8 bit config"
         },
+    )
+    do_RAG : Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": "RAG for pred"
+        },
+    )
+    peft_base : Optional[str] = field(
+        default='beomi/gemma-ko-2b',
+        metadata={
+            "help": "peft base model"
+        },
+    )
+    peft_base_chat_template : Optional[str] = field(
+        default=None,
+        metadata={
+            "help": "peft base model"
+        },
+    )
+    dense_model_name : Optional[str] = field(
+        default='intfloat/multilingual-e5-large-instruct',
+        metadata={
+            "help": "dense embedding models"
+        }
+    )
+    RAG_dataset_path : Optional[str] = field(
+        default="../data",
+        metadata={
+            "help": "The path of directory that stores contexts for RAG"
+        }
+    )
+    RAG_context_path : Optional[str] = field(
+        default="wiki_documents_original.csv", 
+        metadata={
+            "help": "contexts for RAG"
+        }
+    )
+    RAG_System_prompt : Optional[str] = field(
+        default="지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요.",
+        metadata={
+            "help": "system prompt for RAG"
+        }
     )
     optimize_flag : Optional[bool] = field(
         default=True,

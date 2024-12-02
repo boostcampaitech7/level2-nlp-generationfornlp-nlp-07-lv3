@@ -7,16 +7,21 @@ from datasets import Dataset
 import evaluate
 import numpy as np
 import pandas as pd
-from peft import AutoPeftModelForCausalLM
+from peft import AutoPeftModelForCausalLM, LoraConfig, PeftModel
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig, \
     AutoConfig
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from tqdm import tqdm
+from arguments import ModelArguments, DataTrainingArguments, CustomArguments
+
+from retrieval_tasks.retrieval_hybrid import HybridSearch
+from retrieval_tasks.retrieval_rerank import Reranker
+from retrieval_tasks.retrieve_utils import retrieve
+
 import wandb
 
-from arguments import ModelArguments, DataTrainingArguments, CustomArguments
-from utils import record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model
+from utils import record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model, apply_lora, remove_lora, train_df_to_process_df_with_rag, test_df_to_process_df_with_rag
 
 SEED = 42
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -31,11 +36,13 @@ def main(run_name, debug=False):
     set_seed(SEED)
 
     model_name = None
+    adaptor = None
     parser = HfArgumentParser(
         (ModelArguments, DataTrainingArguments, TrainingArguments, CustomArguments)
     )
     model_args, data_args, train_args, custom_args = parser.parse_args_into_dataclasses()
     plus_prompt, no_plus_prompt = custom_args.prompt_question_plus, custom_args.prompt_no_question_plus
+    plus_prompt_rag, no_plus_prompt_rag = custom_args.prompt_question_plus_rag, custom_args.prompt_no_question_plus_rag
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
     wandb.init(
@@ -56,7 +63,7 @@ def main(run_name, debug=False):
 
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
-    dataset = dataset.sample(100, random_state=SEED).reset_index(drop=True) if debug else dataset
+    dataset = dataset.sample(10, random_state=SEED).reset_index(drop=True) if debug else dataset
     dataset.to_csv(parent_dir, 'data', f"sampled_dataset_{now}.csv") if debug else None
 
     df = record_to_df(dataset)
@@ -77,7 +84,7 @@ def main(run_name, debug=False):
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             config=config,
-            torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            torch_dtype=torch.float32 if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
             device_map="auto",
@@ -87,12 +94,23 @@ def main(run_name, debug=False):
         if custom_args.gc_flag:
             model.gradient_checkpointing_enable()
 
-    if not train_args.do_train:
+    if not train_args.do_train and not custom_args.do_RAG:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
         model = AutoPeftModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16 if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            torch_dtype=torch.float32 if not isinstance(quant_config, BitsAndBytesConfig) else None,
+            trust_remote_code=True,
+            quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
+        )
+
+    if not train_args.do_train and custom_args.do_RAG:
+        latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
+        adaptor = os.path.join(model_args.model_name_or_path, latest_ckpt)
+        model_name = custom_args.peft_base
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype="auto" if not isinstance(quant_config, BitsAndBytesConfig) else None,
             trust_remote_code=True,
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
@@ -101,6 +119,30 @@ def main(run_name, debug=False):
         model_name,
         trust_remote_code=True,
     )
+
+    custom_args.peft_base_chat_template = tokenizer.chat_template
+    tokenizer.chat_template = custom_args.chat_template
+    peft_config = custom_args.peft_config
+    if not train_args.do_train and custom_args.do_RAG:
+        model = apply_lora(model, adaptor)
+
+    if custom_args.do_RAG:
+            dense_model_name = []
+            dense_model_name.append(custom_args.dense_model_name)
+            retriever = HybridSearch(
+                        tokenize_fn=tokenizer.tokenize,
+                        dense_model_name=dense_model_name,
+                        data_path=custom_args.RAG_dataset_path,
+                        context_path=custom_args.RAG_context_path,
+                    )
+            retriever.get_dense_embedding()
+            retriever.get_sparse_embedding()
+
+    dataset = Dataset.from_pandas(df)
+    if not custom_args.do_RAG:
+        processed_dataset = train_df_to_process_df(dataset, plus_prompt, no_plus_prompt)
+    if custom_args.do_RAG:
+        processed_dataset = train_df_to_process_df_with_rag(dataset, plus_prompt_rag, no_plus_prompt_rag, retriever, model, tokenizer, adaptor, custom_args, data_args)
 
     def formatting_prompts_func(example):
         output_texts = []
@@ -125,6 +167,8 @@ def main(run_name, debug=False):
             "input_ids": outputs["input_ids"],
             "attention_mask": outputs["attention_mask"],
         }
+
+    mex_seq_len = data_args.max_seq_length
 
     # 모델의 logits 를 조정하여 정답 토큰 부분만 출력하도록 설정
     def preprocess_logits_for_metrics(logits, labels):
@@ -196,12 +240,12 @@ def main(run_name, debug=False):
                 max_seq_length=data_args.max_seq_length,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=3,
+                num_train_epochs=10,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
                 save_strategy="epoch",
-                eval_strategy="epoch",
+                #eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
                 report_to="wandb",
@@ -224,8 +268,11 @@ def main(run_name, debug=False):
         if train_args.do_predict:
             test_df = pd.read_csv(data_args.test_dataset_name)
             test_df = record_to_df(test_df)
-            test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
-
+            if not custom_args.do_RAG:
+                test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
+            if custom_args.do_RAG:
+                test_dataset = test_df_to_process_df_with_rag(test_df, plus_prompt_rag, no_plus_prompt_rag, retriever, model, tokenizer, adaptor, custom_args, data_args)
+            
             infer_results = []
             pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
 
@@ -282,4 +329,5 @@ if __name__ == '__main__':
         while argv_run_name == '':
             argv_run_name = input("run name is missing, please add run name : ")
 
-    main(argv_run_name)
+    main(argv_run_name, debug=True)
+    # main(argv_run_name)
