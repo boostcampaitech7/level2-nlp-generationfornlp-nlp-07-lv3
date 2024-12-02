@@ -1,7 +1,8 @@
+import time
+from ast import literal_eval
+
 import pandas as pd
 from googletrans import Translator
-from ast import literal_eval
-import time
 from tqdm import tqdm  # For progress visualization
 
 # Initialize translator

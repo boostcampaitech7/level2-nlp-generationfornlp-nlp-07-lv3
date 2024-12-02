@@ -1,8 +1,8 @@
+import os
+from ast import literal_eval
+
 import streamlit as st
 import pandas as pd
-import os
-import re
-from ast import literal_eval
 from transformers import AutoTokenizer
 from kiwipiepy import Kiwi
 

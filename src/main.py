@@ -3,25 +3,22 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 import sys
 import logging
 
+import torch
+import wandb
 from datasets import Dataset
 import evaluate
 import numpy as np
 import pandas as pd
-from peft import AutoPeftModelForCausalLM, LoraConfig, PeftModel
-import torch
+from peft import AutoPeftModelForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments, BitsAndBytesConfig, \
     AutoConfig
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from tqdm import tqdm
+
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
-
 from retrieval_tasks.retrieval_hybrid import HybridSearch
-from retrieval_tasks.retrieval_rerank import Reranker
-from retrieval_tasks.retrieve_utils import retrieve
-
-import wandb
-
-from utils import record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model, apply_lora, remove_lora, train_df_to_process_df_with_rag, test_df_to_process_df_with_rag
+from utils import (record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model, apply_lora,
+                   train_df_to_process_df_with_rag, test_df_to_process_df_with_rag)
 
 SEED = 42
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
