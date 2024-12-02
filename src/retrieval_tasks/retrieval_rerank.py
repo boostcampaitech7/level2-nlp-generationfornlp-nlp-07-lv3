@@ -1,34 +1,20 @@
-import json
-import os
-import pickle
-import time
-import torch
 import logging
-import scipy
+import os
+import time
+
+import pandas as pd
+import torch
 from contextlib import contextmanager
-from typing import List, Optional, Tuple, Union, NoReturn
+from datasets import Dataset
+from typing import  Optional, NoReturn
 from tqdm.auto import tqdm
 
-import argparse
-import random
-import numpy as np
-import pandas as pd
-from datasets import Dataset, concatenate_datasets, load_from_disk
-from torch.nn.functional import normalize
-
-from retrieval_tasks.retrieval_hybrid import HybridSearch
-from retrieval_tasks.retrieval import retrieval
-# from retrieval_hybrid import HybridSearch
-# from retrieval import retrieval
-
-
-from rank_bm25 import BM25Okapi, BM25Plus
-from transformers import AutoTokenizer, AutoModel
-
-from retrieval_tasks.utils import set_seed
-# from utils import set_seed
+from retrieval_hybrid import HybridSearch
+from retrieval import retrieval
+from src.utils import set_seed
 
 set_seed(2024)
+torch.use_deterministic_algorithms(False)
 logger = logging.getLogger(__name__)
 
 @contextmanager
