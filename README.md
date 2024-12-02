@@ -37,13 +37,13 @@
       <a href="https://github.com/simigami">이정민</a>
     </td>
     <td align="center" width="150px">
-      <a href="https://github.com/ksj1368">장요한</a>
+      <a href="https://github.com/DDUKDAE">장요한</a>
     </td>
     <td align="center" width="150px">
-      <a href="https://github.com/ksj1368">한동훈</a>
+      <a href="https://github.com/mrsuit0114">한동훈</a>
     </td>
     <td align="center" width="150px">
-      <a href="https://github.com/mrsuit0114">홍성균</a>
+      <a href="https://github.com/hskhyl">홍성균</a>
     </td>
   </tr>
 </table>
