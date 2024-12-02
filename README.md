@@ -147,7 +147,14 @@ CSAT-Solver/
 │   ├── arguments.py        # 학습에 필요한 여러 인자
 │   ├── utils.py            # 시드 고정 및 데이터 셋 chat message 형태로 변환
 │   ├── streamlit_app.py    # EDA 시각화 제공 프로그램
-│   └── main.py             # 모델 학습 및 추론
+│   ├── main.py             # 모델 학습 및 추론
+│   ├── ensemble.py         # 추론 결과 앙상블
+│   ├── backtranslation_augmentation.py # 역번역 증강
+│   └── retrieval_tasks/    # RAG 파이프라인 코드 디렉토리
+│       ├── retrieval.py          # 리트리버 공통 추상 클래스
+│       ├── retrieval_hybrid.py   # 하이브리드 서치 
+│       ├── retrieval_rerank.py   # two-stage reranker 
+│       └── retrieve_utils.py     # RAG 기반 검색·요약 파이프라인
 │
 ├── requirements.txt
 ├── README.md
