@@ -138,7 +138,7 @@ class CustomArguments:
             "help": "Quant 8 bit config"
         },
     )
-    do_RAG : Optional[bool] = field(
+    do_rag : Optional[bool] = field(
         default=True,
         metadata={
             "help": "RAG for pred"
@@ -162,19 +162,19 @@ class CustomArguments:
             "help": "dense embedding models"
         }
     )
-    RAG_dataset_path : Optional[str] = field(
+    rag_dataset_path : Optional[str] = field(
         default="../data",
         metadata={
             "help": "The path of directory that stores contexts for RAG"
         }
     )
-    RAG_context_path : Optional[str] = field(
+    rag_context_path : Optional[str] = field(
         default="wiki_documents_original.csv", 
         metadata={
             "help": "contexts for RAG"
         }
     )
-    RAG_System_prompt : Optional[str] = field(
+    rag_System_prompt : Optional[str] = field(
         default="지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요.",
         metadata={
             "help": "system prompt for RAG"
@@ -196,5 +196,11 @@ class CustomArguments:
         default=1.0,
         metadata={
             "help": "Number of hidden layers"
+        },
+    )
+    rag_response_threshold : Optional[int] = field(
+        default=350,
+        metadat={
+            "help": "length of rag response threshold"
         },
     )

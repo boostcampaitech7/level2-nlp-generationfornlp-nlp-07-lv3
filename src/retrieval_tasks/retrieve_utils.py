@@ -1,7 +1,7 @@
 import torch
 
 from src.arguments import CustomArguments
-from retrieval import retrieval
+from retrieval import Retrieval
 from retrieval_hybrid import HybridSearch
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -13,7 +13,7 @@ def len_of_tokens(tokenizer, context):
 
 def len_of_chat_template(tokenizer, custom_args: CustomArguments):
     message = [
-                {"role": "system", "content": custom_args.RAG_System_prompt},
+                {"role": "system", "content": custom_args.rag_System_prompt},
                 {"role": "user", "content": ""},
                 {"role": "assistant", "content": ""}
             ]
@@ -104,7 +104,7 @@ def truncation(tokenizer, contexts: str, max_response_tokens):
     truncated_context = tokenizer.decode(token_ids, skip_special_tokens=True)
     return truncated_context
 
-def retrieve(retriever: retrieval, llm, tokenizer, messages, max_seq_length, custom_args: CustomArguments, topk: int=5):
+def retrieve(retriever: Retrieval, llm, tokenizer, messages, max_seq_length, custom_args: CustomArguments, topk: int=5):
     prompt_tokens = len_of_tokens(tokenizer, messages)
     chat_template_tokens = len_of_chat_template(tokenizer, custom_args) + 10
     max_response_tokens = max_seq_length - (prompt_tokens + chat_template_tokens)
@@ -112,7 +112,7 @@ def retrieve(retriever: retrieval, llm, tokenizer, messages, max_seq_length, cus
     if max_response_tokens < 0: 
         print("[max_response_tokens error] max_response_tokens를 초과함")
         return None
-    if rag_response_threshold > 350:
+    if rag_response_threshold > custom_args.rag_response_threshold:
         print("[rag_response_threshold error] rag_response_threshold를 초과함")
         return None
 
