@@ -10,13 +10,13 @@ from contextlib import contextmanager
 import numpy as np
 import pandas as pd
 from datasets import Dataset
-from rank_bm25 import BM25Plus
 from torch.nn.functional import normalize
-from transformers import AutoModel
 from typing import List, Optional, Tuple, NoReturn
 from tqdm.auto import tqdm
 
-from retrieval import retrieval
+from retrieval import Retrieval
+from retrieval_syntactic import Syntactic
+from retrieval_semantic import Semantic
 from src.utils import set_seed
 
 set_seed(2024)
@@ -29,16 +29,11 @@ def timer(name):
     yield
     logging.info(f"[{name}] done in {time.time() - t0:.3f} s")
 
-def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0] 
-    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
-class HybridSearch(retrieval):
+class HybridSearch(Retrieval):
     def __init__(
         self,
         tokenize_fn,
-        dense_model_name: list = ['intfloat/multilingual-e5-large-instruct'],
+        dense_model_name: str = 'intfloat/multilingual-e5-large-instruct',
         data_path: Optional[str] = "../data/",
         context_path: Optional[str] = "wiki_documents_original.csv",
     ) -> NoReturn:
@@ -50,61 +45,39 @@ class HybridSearch(retrieval):
         logging.info(f"Lengths of contexts : {len(self.contexts)}")
         self.ids = list(range(len(self.contexts)))
 
-        self.tokenize_fn=tokenize_fn
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.tokenize_fn = tokenize_fn
 
-        self.dense_model_name = dense_model_name[0]
-        self.dense_tokenize_fn = AutoTokenizer.from_pretrained(
-            self.dense_model_name
-        )
+        self.dense_model_name = dense_model_name
 
         self.sparse_embeder = None
-        self.dense_embeder = AutoModel.from_pretrained(
-            self.dense_model_name
-        )
+        self.dense_embeder = Semantic(self.dense_model_name)
         self.sparse_embeds = None
         self.dense_embeds = None
 
     def get_sparse_embedding(self, question=None, contexts=None):
-        vectorizer_path = os.path.join(self.data_path, "BM25Plus_sparse_vectorizer.bin")
+        vectorizer_path = os.path.join(self.data_path, "sparse_vectorizer.bin")
         if contexts is not None:
             self.contexts = contexts
-            self.sparse_embeder = BM25Plus([self.tokenize_fn(doc) for doc in self.contexts], k1=1.837782128608009, b=0.587622663072072, delta=1.1490)
+            self.sparse_embeder = Syntactic(self.tokenize_fn, contexts=self.contexts)
 
-        if question is None and contexts is None:
-            if os.path.isfile(vectorizer_path):
-                with open(vectorizer_path, "rb") as f:
-                    self.sparse_embeder = pickle.load(f)
-                print("Sparse vectorizer and embeddings loaded.")
-            else:
-                print("Fitting sparse vectorizer and building embeddings.")
-                self.sparse_embeder = BM25Plus([self.tokenize_fn(doc) for doc in self.contexts], k1=1.837782128608009, b=0.587622663072072, delta=1.1490)
-                with open(vectorizer_path, "wb") as f:
-                    pickle.dump(self.sparse_embeder, f)
-                print("Sparse vectorizer and embeddings saved.")
-        elif question is not None:
+        if question is not None:
             if not hasattr(self.sparse_embeder, 'vocabulary_'):
-                vectorizer_path = os.path.join(self.data_path, "sparse_vectorizer.bin")
-                if os.path.isfile(vectorizer_path):
-                    with open(vectorizer_path, "rb") as f:
-                        self.sparse_embeder = pickle.load(f)
-                    print("Sparse vectorizer loaded for transforming the query.")
-                else:
-                    raise ValueError("The Sparse vectorizer is not fitted. Please run get_sparse_embedding() first.")
+                self.sparse_embeder = Syntactic(self.tokenize_fn, contexts=self.contexts, vectorizer_path=vectorizer_path, save_embedding=True)
             return self.sparse_embeder.transform(question)
 
+        if question is None and contexts is None:
+            self.sparse_embeder = Syntactic(self.tokenize_fn, contexts=self.contexts, vectorizer_path=vectorizer_path, save_embedding=True)
 
-    def get_dense_embedding(self, question=None, contexts=None):
+    def get_dense_embedding(self, question=None, contexts=None, batch_size=64):
         if contexts is not None:
             self.contexts = contexts
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            self.dense_embeder.to(device)
-            encoded_input = self.dense_tokenize_fn(
-                self.contexts, padding=True, truncation=True, return_tensors='pt'
-            ).to(device)
-            with torch.no_grad():
-                model_output = self.dense_embeder(**encoded_input)
-            sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
-            self.dense_embeds = sentence_embeddings.cpu()
+            self.dense_embeds = self.dense_embeder.output(self.contexts).cpu()
+
+        if question is not None:
+            sentence_embeddings = self.dense_embeder.output(question)
+            sentence_embeddings = normalize(sentence_embeddings, p=2, dim=1)
+            return sentence_embeddings.cpu()
 
         if question is None and contexts is None:
             model_n = self.dense_model_name.split('/')[1]
@@ -116,40 +89,18 @@ class HybridSearch(retrieval):
                 print("Dense embedding loaded.")
             else:
                 print("Building passage dense embeddings in batches.")
-                self.dense_embeds = []
-                batch_size = 64
-                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                self.dense_embeder.to(device)
+                self.dense_embeds = torch.zeros(len(self.contexts), self.dense_embeder.config.hidden_size)
 
                 for i in tqdm(range(0, len(self.contexts), batch_size), desc="Encoding passages"):
                     batch_contexts = self.contexts[i:i+batch_size]
-                    encoded_input = self.dense_tokenize_fn(
-                        batch_contexts, padding=True, truncation=True, return_tensors='pt'
-                    ).to(device)
-                    with torch.no_grad():
-                        model_output = self.dense_embeder(**encoded_input)
-                    sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
+                    sentence_embeddings = self.dense_embeder.output(batch_contexts)
                     sentence_embeddings = normalize(sentence_embeddings, p=2, dim=1)
-                    self.dense_embeds.append(sentence_embeddings.cpu())
+                    self.dense_embeds[i] = sentence_embeddings.cpu()
                     del encoded_input, model_output, sentence_embeddings 
                     torch.cuda.empty_cache()  
 
-                self.dense_embeds = torch.cat(self.dense_embeds, dim=0)
                 torch.save(self.dense_embeds, emd_path)
                 print("Dense embeddings saved.")
-        elif question is not None:
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            self.dense_embeder.to(device)
-            encoded_input = self.dense_tokenize_fn(
-                question, padding=True, truncation=True, return_tensors='pt'
-            ).to(device)
-            with torch.no_grad():
-                model_output = self.dense_embeder(**encoded_input)
-            sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
-            sentence_embeddings = normalize(sentence_embeddings, p=2, dim=1)
-            self.dense_embeder.cpu()
-            del encoded_input
-            return sentence_embeddings.cpu()
 
     def hybrid_scale(self, dense_score, sparse_score, alpha: float):
         if alpha < 0 or alpha > 1:

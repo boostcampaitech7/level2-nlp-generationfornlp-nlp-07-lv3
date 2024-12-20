@@ -91,7 +91,7 @@ def main(run_name, debug=False):
         if custom_args.gc_flag:
             model.gradient_checkpointing_enable()
 
-    if not train_args.do_train and not custom_args.do_RAG:
+    if not train_args.do_train and not custom_args.do_rag:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
         model = AutoPeftModelForCausalLM.from_pretrained(
@@ -101,7 +101,7 @@ def main(run_name, debug=False):
             quantization_config=quant_config if isinstance(quant_config, BitsAndBytesConfig) else None,
         )
 
-    if not train_args.do_train and custom_args.do_RAG:
+    if not train_args.do_train and custom_args.do_rag:
         latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
         adaptor = os.path.join(model_args.model_name_or_path, latest_ckpt)
         model_name = custom_args.peft_base
@@ -120,25 +120,25 @@ def main(run_name, debug=False):
     custom_args.peft_base_chat_template = tokenizer.chat_template
     tokenizer.chat_template = custom_args.chat_template
     peft_config = custom_args.peft_config
-    if not train_args.do_train and custom_args.do_RAG:
+    if not train_args.do_train and custom_args.do_rag:
         model = apply_lora(model, adaptor)
 
-    if custom_args.do_RAG:
+    if custom_args.do_rag:
             dense_model_name = []
             dense_model_name.append(custom_args.dense_model_name)
             retriever = HybridSearch(
                         tokenize_fn=tokenizer.tokenize,
                         dense_model_name=dense_model_name,
-                        data_path=custom_args.RAG_dataset_path,
-                        context_path=custom_args.RAG_context_path,
+                        data_path=custom_args.rag_dataset_path,
+                        context_path=custom_args.rag_context_path,
                     )
             retriever.get_dense_embedding()
             retriever.get_sparse_embedding()
 
     dataset = Dataset.from_pandas(df)
-    if not custom_args.do_RAG:
+    if not custom_args.do_rag:
         processed_dataset = train_df_to_process_df(dataset, plus_prompt, no_plus_prompt)
-    if custom_args.do_RAG:
+    if custom_args.do_rag:
         processed_dataset = train_df_to_process_df_with_rag(dataset, plus_prompt_rag, no_plus_prompt_rag, retriever, model, tokenizer, adaptor, custom_args, data_args)
 
     def formatting_prompts_func(example):
@@ -265,9 +265,9 @@ def main(run_name, debug=False):
         if train_args.do_predict:
             test_df = pd.read_csv(data_args.test_dataset_name)
             test_df = record_to_df(test_df)
-            if not custom_args.do_RAG:
+            if not custom_args.do_rag:
                 test_dataset = test_df_to_process_df(test_df, plus_prompt, no_plus_prompt)
-            if custom_args.do_RAG:
+            if custom_args.do_rag:
                 test_dataset = test_df_to_process_df_with_rag(test_df, plus_prompt_rag, no_plus_prompt_rag, retriever, model, tokenizer, adaptor, custom_args, data_args)
             
             infer_results = []

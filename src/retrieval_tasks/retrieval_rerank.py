@@ -10,7 +10,7 @@ from typing import  Optional, NoReturn
 from tqdm.auto import tqdm
 
 from retrieval_hybrid import HybridSearch
-from retrieval import retrieval
+from retrieval import Retrieval
 from src.utils import set_seed
 
 set_seed(2024)
@@ -24,11 +24,11 @@ def timer(name):
     logging.info(f"[{name}] done in {time.time() - t0:.3f} s")
 
 
-class Reranker(retrieval):
+class Reranker(Retrieval):
     def __init__(
         self,
         tokenize_fn,
-        dense_model_name: list = ['intfloat/multilingual-e5-large-instruct'],
+        dense_model_name: list = ['intfloat/multilingual-e5-large-instruct','upskyy/bge-m3-korean'],
         data_path: Optional[str] = "../data/",
         context_path: Optional[str] = "wiki_documents_original.csv",
     ) -> NoReturn:
@@ -49,56 +49,57 @@ class Reranker(retrieval):
         self.embeder.get_dense_embedding()
         self.embeder.get_sparse_embedding()
 
-        self.embeder2 = HybridSearch(
-            tokenize_fn=tokenize_fn,
-            dense_model_name=dense_model_name[1],
-            data_path=data_path,
-            context_path=context_path,
-        )
+        if len(dense_model_name) == 2:
+            self.embeder2 = HybridSearch(
+                tokenize_fn=tokenize_fn,
+                dense_model_name=dense_model_name[1],
+                data_path=data_path,
+                context_path=context_path,
+            )
+        elif len(dense_model_name) == 1:
+            self.embeder2 = HybridSearch(
+                tokenize_fn=tokenize_fn,
+                dense_model_name=dense_model_name[0],
+                data_path=data_path,
+                context_path=context_path,
+            )
 
-        self.sparse_embeds_bool = True
-        self.dense_embeds_bool = False
-
-    def retrieve_first(self, queries, topk: Optional[int] = 1):
-        if self.sparse_embeds_bool == False:
-            self.embeder.get_sparse_embedding()
-            self.sparse_embeds_bool = True
-        f_df = self.embeder.retrieve(queries, topk=topk, alpha=0)
+    def retrieve_first(self, queries, topk: Optional[int] = 1, alpha: Optional[int]=0):
+        f_df = self.embeder.retrieve(queries, topk=topk, alpha=alpha)
         return f_df
     
-    def retireve_second(self, queries, topk: Optional[int] = 1, contexts=None):
+    def retireve_second(self, queries, topk: Optional[int] = 1, contexts=None, alpha: Optional[int]=0):
         self.embeder2.get_dense_embedding(contexts=contexts)
         self.embeder2.get_sparse_embedding(contexts=contexts)
-        self.dense_embeds_bool = True
-        s_df = self.embeder2.retrieve(queries, topk=topk, alpha=0)
+        s_df = self.embeder2.retrieve(queries, topk=topk, alpha=alpha)
         return s_df
 
-    def retrieve(self, query_or_dataset, topk: Optional[int] = 1):
+    def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha_1: Optinal[int] = 0, alpha_2: Optinal[int] = 0):
         retrieved_contexts = []
         if isinstance(query_or_dataset, str):
-            _, doc_contexts = self.retrieve_first(query_or_dataset, topk)
+            _, doc_contexts = self.retrieve_first(query_or_dataset, topk, alpha=alpha_1)
             retrieved_contexts = doc_contexts
         elif isinstance(query_or_dataset, Dataset):
             for idx, example in enumerate(tqdm(query_or_dataset, desc="[Rerank first retrieval]: ")):
-                _, doc_contexts = self.retrieve_first(example['question'], topk)
+                _, doc_contexts = self.retrieve_first(example['question'], topk, alpha=alpha_1)
                 retrieved_contexts.append(doc_contexts)
 
         half_topk = 5 
 
         if isinstance(query_or_dataset, str):
-            second_df = self.retireve_second(query_or_dataset, half_topk, contexts=retrieved_contexts)
+            second_df = self.retireve_second(query_or_dataset, half_topk, contexts=retrieved_contexts, alpha=alpha_2)
             return second_df
         elif isinstance(query_or_dataset, Dataset):
             second_df = []
             for i, example in enumerate(tqdm(query_or_dataset, desc="[Rerank second retrieval] ")):
                 context = retrieved_contexts[i]
-                doc_scores, doc_contexts = self.retireve_second(example['question'], half_topk, contexts=context)
-                tmp = {
+                doc_scores, doc_contexts = self.retireve_second(example['question'], half_topk, contexts=context, alpha=alpha_2)
+                template = {
                     "question": example["question"],
                     "id": example["id"],
                     "context": " ".join(doc_contexts),
                 }
-                second_df.append(tmp)
+                second_df.append(template)
             second_df = pd.DataFrame(second_df)
             return second_df
 
