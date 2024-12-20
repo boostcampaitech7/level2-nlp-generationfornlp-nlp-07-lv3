@@ -151,7 +151,11 @@ CSAT-Solver/
 │   ├── ensemble.py         # 추론 결과 앙상블
 │   ├── backtranslation_augmentation.py # 역번역 증강
 │   └── retrieval_tasks/    # RAG 파이프라인 코드 디렉토리
+│       ├── __init__.py
+│       ├── LLM_tasks.py          # LLM을 활용한 파이프라인 중의 요약 및 확인 task
 │       ├── retrieval.py          # 리트리버 공통 추상 클래스
+│       ├── retrieval_semantic.py # Dense 
+│       ├── retrieval_syntactic.py # Sparse
 │       ├── retrieval_hybrid.py   # 하이브리드 서치 
 │       ├── retrieval_rerank.py   # two-stage reranker 
 │       └── retrieve_utils.py     # RAG 기반 검색·요약 파이프라인
