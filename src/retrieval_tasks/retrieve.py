@@ -1,4 +1,5 @@
 import torch
+import logging
 
 from src.arguments import CustomArguments
 from retrieval import Retrieval
@@ -40,22 +41,22 @@ def retrieve(retriever: Retrieval, llm, tokenizer, messages, max_seq_length, cus
     max_response_tokens = max_seq_length - (prompt_tokens + chat_template_tokens)
     rag_response_threshold = prompt_tokens + chat_template_tokens
     if max_response_tokens < 0: 
-        print("[max_response_tokens error] max_response_tokens를 초과함")
+        logging.info("[max_response_tokens error] max_response_tokens를 초과함")
         return None
     if rag_response_threshold > custom_args.rag_response_threshold:
-        print("[rag_response_threshold error] rag_response_threshold를 초과함")
+        logging.info("[rag_response_threshold error] rag_response_threshold를 초과함")
         return None
 
     query = messages
-    # result = llm_check(llm, tokenizer, query)
-    result = "필요함"
-    print(query)
-    print(f"[RAG가 필요한가?] {result}")
+    result = llm_check(llm, tokenizer, query)
+    # result = "필요함"
+    logging.info(query)
+    logging.info(f"[RAG가 필요한가?] {result}")
     if '필요함' in result:
         _ , contexts = retriever.retrieve(query, topk=topk)
-        # summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
-        summary = truncation(tokenizer, ' '.join(contexts)[:], max_response_tokens)
-        print(f"[RAG & Summary] {summary}")
+        summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
+        # summary = truncation(tokenizer, ' '.join(contexts)[:], max_response_tokens)
+        logging.info(f"[RAG & Summary] {summary}")
         return summary
     elif '필요하지않음' in result:
         return None
@@ -102,4 +103,4 @@ if __name__=="__main__":
                     ]
 
         summary = retrieve(retriever, model, tokenizer, messages, 1024)
-        print(summary)
+        logging.info(summary)

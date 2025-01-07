@@ -16,7 +16,9 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from tqdm import tqdm
 
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
-from retrieval_tasks.retrieval_hybrid import HybridSearch
+from retrieval_tasks import HybridSearch
+from retrieval_tasks import Reranker
+from retrieval_tasks import Semantic
 from utils import (record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model, apply_lora,
                    train_df_to_process_df_with_rag, test_df_to_process_df_with_rag)
 
@@ -124,16 +126,20 @@ def main(run_name, debug=False):
         model = apply_lora(model, adaptor)
 
     if custom_args.do_rag:
-            dense_model_name = []
-            dense_model_name.append(custom_args.dense_model_name)
-            retriever = HybridSearch(
-                        tokenize_fn=tokenizer.tokenize,
-                        dense_model_name=dense_model_name,
-                        data_path=custom_args.rag_dataset_path,
-                        context_path=custom_args.rag_context_path,
-                    )
-            retriever.get_dense_embedding()
-            retriever.get_sparse_embedding()
+        retriever = Semantic(
+            dense_model_name=custom_args.dense_model_name
+        )
+        retriever.get_dense_embedding_with_faiss()
+        # dense_model_name = []
+        # dense_model_name.append(custom_args.dense_model_name)
+        # retriever = HybridSearch(
+        #             tokenize_fn=tokenizer.tokenize,
+        #             dense_model_name=dense_model_name,
+        #             data_path=custom_args.rag_dataset_path,
+        #             context_path=custom_args.rag_context_path,
+        #         )
+        # retriever.get_dense_embedding()
+        # retriever.get_sparse_embedding()
 
     dataset = Dataset.from_pandas(df)
     if not custom_args.do_rag:

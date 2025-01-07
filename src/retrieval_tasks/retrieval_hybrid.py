@@ -181,8 +181,8 @@ class HybridSearch(Retrieval):
             result = self.hybrid_scale(dense_score.numpy(), sparse_score, alpha)
         sorted_result = np.argsort(result.squeeze())[::-1]
         doc_score = result.squeeze()[sorted_result].tolist()[:k]
-        doc_indices = sorted_result.tolist()[:k]
-        return doc_score, doc_indices
+        doc_indice = sorted_result.tolist()[:k]
+        return doc_score, doc_indice
 
     def get_relevant_doc_bulk(
         self, queries: List[str], alpha: float, k: Optional[int] = 1, no_sparse: bool = False

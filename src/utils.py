@@ -10,7 +10,7 @@ from tqdm import tqdm
 from peft import PeftModel
 
 from arguments import DataTrainingArguments, CustomArguments
-from retrieval_tasks.retrieve_utils import retrieve
+from retrieval_tasks import retrieve
 
 def set_seed(seed: int = 42):
     random.seed(seed)
@@ -23,8 +23,8 @@ def set_seed(seed: int = 42):
     torch.use_deterministic_algorithms(True)
 
 def apply_lora(model, adaptor_path):
-        lora_model = PeftModel.from_pretrained(model, adaptor_path)
-        return lora_model
+    lora_model = PeftModel.from_pretrained(model, adaptor_path)
+    return lora_model
 
 def remove_lora(model):
     vanilla_model = model.merge_and_unload()
