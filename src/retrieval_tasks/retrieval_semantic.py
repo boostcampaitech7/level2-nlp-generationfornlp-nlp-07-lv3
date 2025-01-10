@@ -40,6 +40,7 @@ class Semantic(Retrieval):
     def get_dense_embedding_with_faiss(self, question=None, contexts=None, batch_size=64):
         self.indexer = getattr(retrieval_tasks.indexers, self.indexer_type)()
         if self.indexer.index_exists(self.index_output):
+            self.indexer.init_index(self.dense_embeder.pooler.dense.out_features)
             self.indexer.deserialize(self.index_output)
         else:
             IndexRunner(
