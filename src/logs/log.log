@@ -14991,3 +14991,170 @@ Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올
 [2025-01-10 07:33:21,770 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors.index.json HTTP/1.1" 404 0
 [2025-01-10 07:33:22,015 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors HTTP/1.1" 302 0
 [2025-01-10 07:33:23,491 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
+[2025-01-10 07:34:29,736 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=None, shell=False, universal_newlines=False)
+[2025-01-10 07:34:30,765 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'cat-file', '--batch-check'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=<valid stream>, shell=False, universal_newlines=False)
+[2025-01-10 07:34:35,457 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] model is from Qwen/Qwen2.5-32B-Instruct
+[2025-01-10 07:34:35,457 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
+[2025-01-10 07:34:35,542 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:34:40,820 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:35:02,634 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 07:35:44,328 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 07:35:45,026 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:35:45,581 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:35:46,907 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:35:47,243 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 07:35:47,330 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:35:47,614 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 07:35:47,859 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:35:48,088 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:35:48,335 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:35:48,339 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:35:49,238 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 200 47
+[2025-01-10 07:35:49,240 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:35:49,980 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "GET /call/run/4c8f700b3d8f4b9ca3024f25c6700c85 HTTP/1.1" 200 None
+[2025-01-10 07:35:52,258 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:35:52,529 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:35:52,773 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:35:52,843 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loading index from ../data/2050iter_flat
+[2025-01-10 07:35:52,933 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loaded index of type <class 'faiss.swigfaiss_avx512.IndexFlatIP'> and size 41250
+[2025-01-10 07:35:52,959 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:52,962 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:52,965 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors.index.json HTTP/1.1" 404 0
+[2025-01-10 07:35:52,965 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:52,967 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:52,970 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:52,974 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [max_response_tokens error] max_response_tokens를 초과함
+[2025-01-10 07:35:52,978 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:52,979 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:35:52,980 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG가 필요한가?] 필요함
+[2025-01-10 07:35:53,170 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors HTTP/1.1" 302 0
+[2025-01-10 07:35:53,353 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] [Search query] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:35:53,356 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG & Summary] <s> 색 공간</s><s> 색 공간(色空間)은 색 표시계(color system)를 3차원으로 표현한 공간 개념이다. 색 표시계의 모든 색들은 이 색 공간에서 3차원 좌표로 나타낸다. 여기서 색 표시계(color system)란 CIERGB, CIEXYZ, CIELAB, CIELUV 등의 색 체계를 말한다. 최근 디자인 학계나 산업계에서 색채 디자인 또는 시각 <s> 색 공간</s>. 여기서 '균등 색 공간'이란 '불균등 색 공간'의 대립 개념이며, 불균등 공간에서는 색상들을 나타내는 선, 채도들을 나타내는 선들이 일정하지 않고 불규칙하게 배열되기 때문에 색 공간에서 두 점의 거리 즉, 색의 차이를 계산하면 정확하지 않다. 전통적 색 공간. 초기 색 공간은 두 개의 성분을 갖고 있었다. 당시에는 청색광을 무
+[2025-01-10 07:35:53,361 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:53,364 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:35:53,375 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): s3.amazonaws.com:443
+[2025-01-10 07:35:54,008 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://s3.amazonaws.com:443 "HEAD /datasets.huggingface.co/datasets/metrics/evaluate-metric/accuracy/evaluate-metric/accuracy.py HTTP/1.1" 404 0
+[2025-01-10 07:35:54,010 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:35:54,215 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /spaces/evaluate-metric/accuracy/resolve/v0.4.0/accuracy.py HTTP/1.1" 200 0
+[2025-01-10 07:35:54,216 | acquire @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Attempting to acquire lock 140331515599152 on /data/ephemeral/home/.cache/huggingface/evaluate/downloads/96cba97f346e44af314163a75259842d567a1e87cf5b208754598a47f8c5f531.cfd6b2fbd44256c2b82392f9e38ab60b0f49c187db643eb761fb625fe8a3303c.py.lock
+[2025-01-10 07:35:54,217 | acquire @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Lock 140331515599152 acquired on /data/ephemeral/home/.cache/huggingface/evaluate/downloads/96cba97f346e44af314163a75259842d567a1e87cf5b208754598a47f8c5f531.cfd6b2fbd44256c2b82392f9e38ab60b0f49c187db643eb761fb625fe8a3303c.py.lock
+[2025-01-10 07:35:54,218 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:35:54,428 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /spaces/evaluate-metric/accuracy/resolve/v0.4.0/accuracy.py HTTP/1.1" 200 4203
+[2025-01-10 07:35:54,431 | release @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Attempting to release lock 140331515599152 on /data/ephemeral/home/.cache/huggingface/evaluate/downloads/96cba97f346e44af314163a75259842d567a1e87cf5b208754598a47f8c5f531.cfd6b2fbd44256c2b82392f9e38ab60b0f49c187db643eb761fb625fe8a3303c.py.lock
+[2025-01-10 07:35:54,431 | release @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Lock 140331515599152 released on /data/ephemeral/home/.cache/huggingface/evaluate/downloads/96cba97f346e44af314163a75259842d567a1e87cf5b208754598a47f8c5f531.cfd6b2fbd44256c2b82392f9e38ab60b0f49c187db643eb761fb625fe8a3303c.py.lock
+[2025-01-10 07:35:55,633 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
+[2025-01-10 07:35:55,821 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://o151352.ingest.sentry.io:443 "POST /api/4504800232407040/envelope/ HTTP/1.1" 200 None
+[2025-01-10 07:37:22,319 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=None, shell=False, universal_newlines=False)
+[2025-01-10 07:37:23,346 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'cat-file', '--batch-check'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=<valid stream>, shell=False, universal_newlines=False)
+[2025-01-10 07:37:28,137 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] model is from Qwen/Qwen2.5-32B-Instruct
+[2025-01-10 07:37:28,137 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
+[2025-01-10 07:37:28,221 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:37:28,478 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:37:50,584 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 07:38:33,193 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 07:38:33,457 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:38:34,004 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:38:35,375 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:38:35,630 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 07:38:35,715 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:38:36,070 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 07:38:36,358 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:38:36,652 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:38:36,878 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:38:36,882 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:38:37,745 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 200 47
+[2025-01-10 07:38:37,747 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:38:38,488 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "GET /call/run/a5ea08fb28424ce990472e9e33d78cc8 HTTP/1.1" 200 None
+[2025-01-10 07:38:39,451 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loading index from ../data/2050iter_flat
+[2025-01-10 07:38:39,534 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loaded index of type <class 'faiss.swigfaiss_avx512.IndexFlatIP'> and size 41250
+[2025-01-10 07:38:39,564 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,568 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,570 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,573 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,576 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,580 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [max_response_tokens error] max_response_tokens를 초과함
+[2025-01-10 07:38:39,583 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,585 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:38:39,585 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG가 필요한가?] 필요함
+[2025-01-10 07:38:39,956 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] [Search query] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:38:39,959 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG & Summary] <s> 색 공간</s><s> 색 공간(色空間)은 색 표시계(color system)를 3차원으로 표현한 공간 개념이다. 색 표시계의 모든 색들은 이 색 공간에서 3차원 좌표로 나타낸다. 여기서 색 표시계(color system)란 CIERGB, CIEXYZ, CIELAB, CIELUV 등의 색 체계를 말한다. 최근 디자인 학계나 산업계에서 색채 디자인 또는 시각 <s> 색 공간</s>. 여기서 '균등 색 공간'이란 '불균등 색 공간'의 대립 개념이며, 불균등 공간에서는 색상들을 나타내는 선, 채도들을 나타내는 선들이 일정하지 않고 불규칙하게 배열되기 때문에 색 공간에서 두 점의 거리 즉, 색의 차이를 계산하면 정확하지 않다. 전통적 색 공간. 초기 색 공간은 두 개의 성분을 갖고 있었다. 당시에는 청색광을 무
+[2025-01-10 07:38:39,963 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,966 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:38:39,990 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): s3.amazonaws.com:443
+[2025-01-10 07:38:40,030 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:38:40,369 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:38:40,613 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:38:40,819 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors.index.json HTTP/1.1" 404 0
+[2025-01-10 07:38:41,023 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors HTTP/1.1" 302 0
+[2025-01-10 07:38:45,740 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://s3.amazonaws.com:443 "HEAD /datasets.huggingface.co/datasets/metrics/evaluate-metric/accuracy/evaluate-metric/accuracy.py HTTP/1.1" 404 0
+[2025-01-10 07:38:45,743 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:38:45,939 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /spaces/evaluate-metric/accuracy/resolve/v0.4.0/accuracy.py HTTP/1.1" 200 0
+[2025-01-10 07:38:45,946 | acquire @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Attempting to acquire lock 139989093882064 on /data/ephemeral/home/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--accuracy.lock
+[2025-01-10 07:38:45,946 | acquire @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Lock 139989093882064 acquired on /data/ephemeral/home/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--accuracy.lock
+[2025-01-10 07:38:45,947 | release @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Attempting to release lock 139989093882064 on /data/ephemeral/home/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--accuracy.lock
+[2025-01-10 07:38:45,947 | release @ /opt/conda/lib/python3.10/site-packages/filelock/_api.py] Lock 139989093882064 released on /data/ephemeral/home/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--accuracy.lock
+[2025-01-10 07:39:04,996 | check_os_kernel @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/other.py] Detected kernel version 5.4.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
