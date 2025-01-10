@@ -63,7 +63,7 @@ def main(run_name, debug=False):
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
     dataset = dataset.sample(10, random_state=SEED).reset_index(drop=True) if debug else dataset
-    dataset.to_csv(parent_dir, 'data', f"sampled_dataset_{now}.csv") if debug else None
+    # dataset.to_csv(os.path.join(parent_dir, 'data', f"sampled_dataset_{now}.csv")) if debug else None
 
     df = record_to_df(dataset)
 

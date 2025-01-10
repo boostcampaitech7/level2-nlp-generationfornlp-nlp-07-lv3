@@ -10,7 +10,7 @@ from tqdm import tqdm
 from peft import PeftModel
 
 from arguments import DataTrainingArguments, CustomArguments
-from retrieval_tasks import retrieve
+from retrieval_tasks.retrieve import retrieve
 
 def set_seed(seed: int = 42):
     random.seed(seed)
@@ -144,7 +144,7 @@ def train_df_to_process_df_with_rag(
     def rag_process(retriever, model, tokenizer, message, max_seq_length, custom_args: CustomArguments):
         # model = remove_lora(model)
         # tokenizer.chat_template = default_chat_template 
-        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, custom_args ,topk=2)
+        retrieved_contexts_summary = retrieve(retriever, model, tokenizer, message, max_seq_length, custom_args, topk=2)
         # model = apply_lora(model, adaptor_path)
         # tokenizer.chat_template = custom_args.chat_template
         return retrieved_contexts_summary

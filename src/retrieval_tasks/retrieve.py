@@ -1,10 +1,10 @@
 import torch
 import logging
+from typing import List, Optional, Tuple, NoReturn
 
-from src.arguments import CustomArguments
-from retrieval import Retrieval
-from retrieval_hybrid import HybridSearch
-from LLM_tasks import llm_check, llm_summary
+from arguments import CustomArguments
+from .retrieval import Retrieval
+from .LLM_tasks import llm_check, llm_summary
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import BitsAndBytesConfig
@@ -35,7 +35,7 @@ def truncation(tokenizer, contexts: str, max_response_tokens):
     truncated_context = tokenizer.decode(token_ids, skip_special_tokens=True)
     return truncated_context
 
-def retrieve(retriever: Retrieval, llm, tokenizer, messages, max_seq_length, custom_args: CustomArguments, topk: int=5):
+def retrieve(retriever: Optional[Retrieval], llm, tokenizer, messages, max_seq_length, custom_args: CustomArguments, topk: int=5):
     prompt_tokens = len_of_tokens(tokenizer, messages)
     chat_template_tokens = len_of_chat_template(tokenizer, custom_args) + 10
     max_response_tokens = max_seq_length - (prompt_tokens + chat_template_tokens)
@@ -48,14 +48,14 @@ def retrieve(retriever: Retrieval, llm, tokenizer, messages, max_seq_length, cus
         return None
 
     query = messages
-    result = llm_check(llm, tokenizer, query)
-    # result = "필요함"
+    # result = llm_check(llm, tokenizer, query)
+    result = "필요함"
     logging.info(query)
     logging.info(f"[RAG가 필요한가?] {result}")
     if '필요함' in result:
         _ , contexts = retriever.retrieve(query, topk=topk)
-        summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
-        # summary = truncation(tokenizer, ' '.join(contexts)[:], max_response_tokens)
+        # summary = llm_summary(llm, tokenizer, ' '.join(contexts), max_response_tokens)
+        summary = truncation(tokenizer, ' '.join(contexts)[:], max_response_tokens)
         logging.info(f"[RAG & Summary] {summary}")
         return summary
     elif '필요하지않음' in result:
@@ -64,7 +64,7 @@ def retrieve(retriever: Retrieval, llm, tokenizer, messages, max_seq_length, cus
         return None
 
 if __name__=="__main__":
-
+    from .retrieval_hybrid import HybridSearch
     model_name = "yanolja/EEVE-Korean-Instruct-10.8B-v1.0"
     quant_config=BitsAndBytesConfig(
             load_in_4bit=True,

@@ -48,7 +48,7 @@ subprocess.run([
 ], check=True)
 
 # Perform prediction (inference)
-#train_dir = os.path.join(root_dir, 'models', f'model_name_here')
+train_dir = os.path.join(root_dir, 'models', f'model_name_here')
 subprocess.run([
     "python", "main.py",
     "--output_dir", predict_dir,

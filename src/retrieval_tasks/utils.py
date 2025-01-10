@@ -1,6 +1,7 @@
 from glob import glob
 import math
 import typing
+import logging
 
 import torch
 
@@ -32,5 +33,5 @@ def get_passage_file(p_id_list: typing.List[int]) -> str:
         if p_id_min >= s and p_id_max <= e:
             target_file = f
     if target_file is None:
-        logger.debug(f"No file found for passage IDs: {p_id_list}")
+        logging.debug(f"No file found for passage IDs: {p_id_list}")
     return target_file

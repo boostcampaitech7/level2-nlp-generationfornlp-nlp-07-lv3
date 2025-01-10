@@ -169,7 +169,7 @@ class CustomArguments:
         }
     )
     rag_context_path : Optional[str] = field(
-        default="wiki_documents_original.csv", 
+        default="wiki_docs.csv", #"wiki_documents_original.csv", 
         metadata={
             "help": "contexts for RAG"
         }
@@ -200,7 +200,7 @@ class CustomArguments:
     )
     rag_response_threshold : Optional[int] = field(
         default=350,
-        metadat={
+        metadata={
             "help": "length of rag response threshold"
         },
     )

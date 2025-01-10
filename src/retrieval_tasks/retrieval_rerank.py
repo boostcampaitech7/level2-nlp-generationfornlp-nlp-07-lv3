@@ -9,9 +9,9 @@ from datasets import Dataset
 from typing import  Optional, NoReturn
 from tqdm.auto import tqdm
 
-from retrieval_hybrid import HybridSearch
-from retrieval import Retrieval
-from src.utils import set_seed
+from .retrieval_hybrid import HybridSearch
+from .retrieval import Retrieval
+from utils import set_seed
 
 set_seed(2024)
 torch.use_deterministic_algorithms(False)
@@ -74,7 +74,7 @@ class Reranker(Retrieval):
         s_df = self.embeder2.retrieve(queries, topk=topk, alpha=alpha)
         return s_df
 
-    def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha_1: Optinal[int] = 0, alpha_2: Optinal[int] = 0):
+    def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha_1: Optional[int] = 0, alpha_2: Optional[int] = 0):
         retrieved_contexts = []
         if isinstance(query_or_dataset, str):
             _, doc_contexts = self.retrieve_first(query_or_dataset, topk, alpha=alpha_1)

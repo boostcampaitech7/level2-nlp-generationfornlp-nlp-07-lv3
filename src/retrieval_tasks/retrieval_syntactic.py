@@ -5,7 +5,7 @@ import torch
 from rank_bm25 import BM25Plus
 from typing import List, Optional, Tuple, NoReturn
 
-from retrieval import Retrieval
+from .retrieval import Retrieval
 
 class Syntactic:
     def __init__(
@@ -19,16 +19,16 @@ class Syntactic:
         save_embedding: bool = False,
         syntactic_model: Optional[Retrieval] = None
     ):
-    self.contexts = contexts
-    self.tokenize_fn = tokenize_fn
-    self.k1 = k1
-    self.b = b
-    self.delta = delta
+        self.contexts = contexts
+        self.tokenize_fn = tokenize_fn
+        self.k1 = k1
+        self.b = b
+        self.delta = delta
 
-    if syntaictic_model is not None:
-        self.syntactic_embeder = syntactic_model
-    else:
-        self.syntactic_embeder = self.fit_vectorizer(vectorizer_path, save_embedding)
+        if syntaictic_model is not None:
+            self.syntactic_embeder = syntactic_model
+        else:
+            self.syntactic_embeder = self.fit_vectorizer(vectorizer_path, save_embedding)
 
     def transform(self, context):
         return self.syntactic_embeder.transform(context)

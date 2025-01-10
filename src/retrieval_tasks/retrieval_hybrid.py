@@ -14,10 +14,10 @@ from torch.nn.functional import normalize
 from typing import List, Optional, Tuple, NoReturn
 from tqdm.auto import tqdm
 
-from retrieval import Retrieval
-from retrieval_syntactic import Syntactic
-from retrieval_semantic import Semantic
-from src.utils import set_seed
+from .retrieval import Retrieval
+from .retrieval_syntactic import Syntactic
+from .retrieval_semantic import Semantic
+from utils import set_seed
 
 set_seed(2024)
 torch.use_deterministic_algorithms(False)

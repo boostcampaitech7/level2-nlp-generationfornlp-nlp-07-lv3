@@ -1,54 +1,60 @@
 import torch
+import logging
+import os
 from transformers import AutoModel, AutoTokenizer
 from typing import List, Optional, Tuple, NoReturn
 
-from retrieval import Retrieval
-import indexers
-from index_runner import IndexRunner
-from utils import get_passage_file
+import retrieval_tasks.indexers
+from .retrieval import Retrieval
+from .index_runner import IndexRunner
+from .utils import get_passage_file
 
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0] 
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
-class Semantic:
+class Semantic(Retrieval):
     def __init__(
         self,
         dense_model_name: str, 
         indexer_type: str = "DenseFlatIndexer",
         data_path: Optional[str] = "../data/",
-        context_path: Optional[str] = "wiki_documents_original.csv",
+        context_path: Optional[str] = "wiki_docs.csv", #"wiki_documents_original.csv",
+        index_output: Optional[str] = "../data/2050iter_flat"
     ):
-    self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    self.data_path = data_path
-    self.context_path = context_path
-    self.indexer_type = indexer_type
-    self.indexer = None
-    self.dense_model_name = dense_model_name
-    self.dense_tokenize_fn = AutoTokenizer.from_pretrained(
-            self.dense_model_name
-        )
-    self.dense_embeder = AutoModel.from_pretrained(
-            self.dense_model_name
-        ).to(self.device)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.data_path = data_path
+        self.context_path = context_path
+        self.index_output = index_output
+        self.indexer_type = indexer_type
+        self.indexer = None
+        self.dense_model_name = dense_model_name
+        self.dense_tokenize_fn = AutoTokenizer.from_pretrained(
+                self.dense_model_name
+            )
+        self.dense_embeder = AutoModel.from_pretrained(
+                self.dense_model_name
+            ).to(self.device)
 
     def get_dense_embedding_with_faiss(self, question=None, contexts=None, batch_size=64):
-        IndexRunner(
-            encoder=self.dense_embeder,
-            tokenizer=self.dense_tokenize_fn,
-            data_dir=os.path.join(data_path, context_path),
-            indexer_type=self.indexer_type,
-            index_output="2050iter_flat",
-        ).run()
-        self.indexer = getattr(indexers, indexer_type)()
+        self.indexer = getattr(retrieval_tasks.indexers, self.indexer_type)()
+        if self.indexer.index_exists(self.index_output):
+            self.indexer.deserialize(self.index_output)
+        else:
+            IndexRunner(
+                encoder=self.dense_embeder,
+                tokenizer=self.dense_tokenize_fn,
+                data_dir=os.path.join(self.data_path, self.context_path),
+                indexer_type=self.indexer_type,
+                index_output=self.index_output,
+            ).run()
 
     def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha: Optional[float] = 0, no_sparse: bool = True):
-        assert self.sparse_embeder is not None, "You should first execute `get_sparse_embedding()`"
-        assert self.dense_embeds is not None, "You should first execute `get_dense_embedding()`"
+        assert self.dense_embeder is not None, "You should first execute `get_dense_embedding()`"
 
         if isinstance(query_or_dataset, str):
-            doc_scores, doc_indices = self.get_relevant_doc_with_faiss(query_or_dataset, alpha, k=topk, no_sparse=no_sparse)
+            doc_scores, doc_indices = self.get_relevant_doc_with_faiss(query_or_dataset, alpha, k=topk)
             logging.info(f"[Search query] {query_or_dataset}")
 
             return (doc_scores, [self.contexts[doc_indices[i]] for i in range(topk)])
@@ -83,12 +89,12 @@ class Semantic:
             model_output = self.dense_embeder(**encoded_input)
         sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
         if self.indexer is not None:
-            result = self.index.search_knn(query_vectors=out.cpu().numpy(), top_docs=k)
+            result = self.indexer.search_knn(query_vectors=sentence_embeddings.cpu().numpy(), top_docs=k)
             passages = []
             for idx, _ in zip(*result[0]): # idx, sim
                 path = get_passage_file([idx])
                 if not path:
-                    logger.debug(f"올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for {idx}")
+                    logging.debug(f"올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for {idx}")
                     continue
                 with open(path, "rb") as f:
                     passage_dict = pickle.load(f)
@@ -107,7 +113,7 @@ class Semantic:
             model_output = self.dense_embeder(**encoded_input)
         sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
         if self.indexer is not None:
-            result = self.index.search_knn(query_vectors=out.cpu().numpy(), top_docs=k)
+            result = self.indexer.search_knn(query_vectors=sentence_embeddings.cpu().numpy(), top_docs=k)
             doc_scores = []
             doc_indices = []
             for index in enumerate(result):
@@ -116,7 +122,7 @@ class Semantic:
                 for idx, sim in zip(*result[index]): # idx, sim
                     path = get_passage_file([idx])
                     if not path:
-                        logger.debug(f"올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for {idx}")
+                        logging.debug(f"올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for {idx}")
                         continue
                     with open(path, "rb") as f:
                         passage_dict = pickle.load(f)

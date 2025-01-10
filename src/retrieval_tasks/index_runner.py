@@ -9,10 +9,9 @@ import os
 import logging
 from typing import List, Tuple
 
-from chunk_data import DataChunk
-from retrieval_semantic import Semantic
-import indexers
-from utils import get_wiki_filepath, wiki_worker_init
+import retrieval_tasks.indexers
+from .chunk_data import DataChunk
+from .utils import get_wiki_filepath, wiki_worker_init
 
 # logger basic config
 os.makedirs("logs", exist_ok=True)
@@ -42,7 +41,7 @@ class WikiArticleStream(torch.utils.data.IterableDataset):
         # self.chunk_size = chunk_size
         super(WikiArticleStream, self).__init__()
         self.chunker = chunker
-        self.pad_token_id = self.chunker.tokenizer.get_vocab()["[PAD]"]
+        self.pad_token_id = self.chunker.tokenizer.get_vocab()["<pad>"]
         self.wiki_path = wiki_path
         self.max_length = 168  # maximum length for kowiki passage
         # self.start = 0
@@ -86,23 +85,24 @@ class IndexRunner:
         if "=" in data_dir:
             self.data_dir, self.to_this_page = data_dir.split("=")
             self.to_this_page = int(self.to_this_page)
-            self.wiki_files = get_wiki_filepath(self.data_dir)
+            self.wiki_files = [self.data_dir] #get_wiki_filepath(self.data_dir)
         else:
             self.data_dir = data_dir
-            self.wiki_files = get_wiki_filepath(self.data_dir)
+            self.wiki_files = [self.data_dir] #get_wiki_filepath(self.data_dir)
             self.to_this_page = len(self.wiki_files)
 
         self.device = torch.device(device)
         self.encoder = encoder
         self.tokenizer = tokenizer
         self.encoder_emb_sz = self.encoder.pooler.dense.out_features # get cls token dim
-        self.indexer = getattr(indexers, indexer_type)()
+        self.indexer = getattr(retrieval_tasks.indexers, indexer_type)()
         self.chunk_size = chunk_size
         self.batch_size = batch_size
         self.buffer_size = buffer_size
         self.loader = self.get_loader(
             self.tokenizer,
-            self.wiki_files[: self.to_this_page],
+            #self.wiki_files[: self.to_this_page],
+            self.wiki_files,
             chunk_size,
             batch_size,
             worker_init_fn=None,
@@ -120,7 +120,7 @@ class IndexRunner:
             ds,
             batch_size=batch_size,
             collate_fn=lambda x: wiki_collator(
-                x, padding_value=chunker.tokenizer.get_vocab()["[PAD]"]
+                x, padding_value=chunker.tokenizer.get_vocab()["<pad>"]
             ),
             num_workers=1,
             worker_init_fn=worker_init_fn,
@@ -134,19 +134,25 @@ class IndexRunner:
             p, p_mask = batch
             p, p_mask = p.to(self.device), p_mask.to(self.device)
             with torch.no_grad():
-                p_emb = self.encoder(p, p_mask, "passage")
-            _to_index += [(cur + i, _emb) for i, _emb in enumerate(p_emb.cpu().numpy())]
-            cur += p_emb.size(0)
-            if len(_to_index) > self.buffer_size - self.batch_size:
-                logger.debug(f"perform indexing... {len(_to_index)} added")
-                self.indexer.index_data(_to_index)
-                _to_index = []
+                p_emb = self.encoder(p, p_mask)
+            try:
+                _to_index += [(cur + i, _emb) for i, _emb in enumerate(p_emb.cpu().numpy())]
+                cur += p_emb.size(0)
+            except Exception as e:
+                logger.info("p_emb Object doesn't have .cpu()")
+                _to_index += [(cur + i, _emb) for i, _emb in enumerate(p_emb.pooler_output.cpu().numpy())]
+                cur += p_emb.pooler_output.size(0)
+            # if len(_to_index) > self.buffer_size - self.batch_size:
+            logger.info(f"perform indexing... {len(_to_index)} added")
+            self.indexer.index_data(_to_index)
+            _to_index = []
         if _to_index:
-            logger.debug(f"perform indexing... {len(_to_index)} added")
+            logger.info(f"perform indexing... {len(_to_index)} added")
             self.indexer.index_data(_to_index)
             _to_index = []
         os.makedirs(self.index_output, exist_ok=True)
-        self.indexer.serialize(self.index_output) # 임베딩된 값을 파일로 저장
+        self.indexer.serialize(self.index_output) 
+        # 임베딩된 값을 파일로 저장
         # 일반적으로 Faiss는 메모리만을 사용해서 동작하여 필요 없을 수도 있으나 
         # DenseHNSWFlatIndexer DenseHNSWSQIndexer 등은 DenseFlatIndexer와 다르게 램과 디스크 둘 다 활용 가능하여 미리 저장
 

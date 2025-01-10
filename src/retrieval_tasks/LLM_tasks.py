@@ -8,7 +8,7 @@ def llm_summary(llm, tokenizer, retrieved_contexts, max_response_tokens):
     messages = [
         {"role": "system", 
         "content": f"주어진 지문과 문제를 바탕으로, rag된 문서에서 문제 풀이에 도움이 될 만한 내용들을 중심으로 {max_response_tokens} 길이로 요약을 해주세요. 요약한 내용만 출력하고 기타 다른 추가적인 설명 같은 건 생략하세요\n\n{retrieved_contexts}"},
-        {"role": "user", "content": }
+        {"role": "user", "content": ""}
     ]
     inputs = tokenizer.apply_chat_template(
         messages,
@@ -46,7 +46,7 @@ def llm_check(llm, tokenizer, query):
     messages = [
         {"role": "system", 
         "content": f"당신은 수능 감독관입니다.\n{promt}"},
-        {"role": "user", "content": }
+        {"role": "user", "content": ""}
     ]
     inputs = tokenizer.apply_chat_template(
         messages,

@@ -1,5 +1,7 @@
 from collections import defaultdict
+from tqdm import tqdm
 import os
+import pandas as pd
 import pickle
 import logging
 
@@ -24,20 +26,13 @@ class DataChunk:
 
     def chunk(self, input_file):
         """input file format은 attardi/wikiextractor에 나온 형태를 따릅니다."""
-        with open(input_file, "rt", encoding="utf8") as f:
-            input_txt = f.read().strip()
-        input_txt = input_txt.split(
-            "</doc>"
-        )  # </doc> 태그로 split하여 각 article의 제목과 본문을 parsing합니다.
+        with open(input_file, "r", encoding="utf8") as f:
+            input_txt = pd.read_csv(input_file)
         chunk_list = []
         orig_text = []
-        for art in input_txt:
-            art = art.strip()
-            if not art:
-                logger.debug(f"article is empty, passing")
-                continue
-            title = art.split("\n")[0].strip(">").split("title=")[1].strip('"')
-            text = "\n".join(art.split("\n")[2:]).strip()
+        for _ , art in tqdm(input_txt.iterrows(), desc="[chunking]", total=len(input_txt)):
+            title = art['title']
+            text = art['content']
 
             encoded_title = self.tokenizer.encode(title)
             encoded_txt = self.tokenizer.encode(text)
