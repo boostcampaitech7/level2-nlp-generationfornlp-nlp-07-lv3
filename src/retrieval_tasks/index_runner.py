@@ -50,7 +50,7 @@ class WikiArticleStream(torch.utils.data.IterableDataset):
     def __iter__(self):
         # max_length가 되도록 padding 수행
 
-        _, passages = self.chunker.chunk_and_save_orig_passage(self.wiki_path)
+        _, passages = self.chunker.chunk_and_save_orig_passage(input_file=self.wiki_path)
         logger.debug(f"chunked file {self.wiki_path}")
         for passage in passages:
             # if len(passage) > self.max_length:

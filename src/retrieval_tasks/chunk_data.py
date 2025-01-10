@@ -50,7 +50,7 @@ class DataChunk:
         return orig_text, chunk_list
 
     def chunk_and_save_orig_passage(
-        input_file, passage_path="../data/processed_passages", chunk_size=100
+        self, input_file, passage_path="../data/processed_passages", chunk_size=100
     ):
         os.makedirs(passage_path, exist_ok=True)
         idx = 0
