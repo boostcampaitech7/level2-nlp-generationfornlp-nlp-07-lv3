@@ -28,7 +28,8 @@ parent_dir = os.path.dirname(os.getcwd())
 now = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
 
 pd.set_option('display.max_columns', None)
-os.environ["WANDB_MODE"] = "offline"
+# os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_MODE"] = "disabled"
 logger = logging.getLogger(__name__)
 
 def main(run_name, debug=False):
@@ -44,12 +45,12 @@ def main(run_name, debug=False):
     plus_prompt_rag, no_plus_prompt_rag = custom_args.prompt_question_plus_rag, custom_args.prompt_no_question_plus_rag
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
-    wandb.init(
-        project="CSAT-Solver",
-        entity="NotyNoty",
-        name=f"{project_prefix}_{run_name}",
-        save_code=True,
-    )
+    # wandb.init(
+    #     project="CSAT-Solver",
+    #     entity="NotyNoty",
+    #     name=f"{project_prefix}_{run_name}",
+    #     save_code=True,
+    # )
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
@@ -64,7 +65,7 @@ def main(run_name, debug=False):
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
     dataset = dataset.sample(10, random_state=SEED).reset_index(drop=True) if debug else dataset
-    # dataset.to_csv(os.path.join(parent_dir, 'data', f"sampled_dataset_{now}.csv")) if debug else None
+    dataset.to_csv(os.path.join(parent_dir, 'data', f"sampled_dataset_{now}.csv")) if debug else None
 
     df = record_to_df(dataset)
 
@@ -254,7 +255,7 @@ def main(run_name, debug=False):
                 #eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
-                report_to="wandb",
+                # report_to="wandb",
                 gradient_checkpointing=custom_args.gc_flag,  # 그래디언트 체크포인팅 활성화
             )
 
