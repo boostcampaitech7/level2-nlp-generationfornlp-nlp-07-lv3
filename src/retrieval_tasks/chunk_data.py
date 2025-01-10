@@ -20,9 +20,10 @@ logger = logging.getLogger()
 class DataChunk:
     """인풋 text를 tokenizing한 뒤에 주어진 길이로 chunking 해서 반환합니다. 이때 하나의 chunk(context, index 단위)는 하나의 article에만 속해있어야 합니다."""
 
-    def __init__(self, tokenizer, chunk_size=100):
+    def __init__(self, tokenizer, chunk_size=100, chunked_path: str = ""):
         self.chunk_size = chunk_size
         self.tokenizer = tokenizer
+        self.chunked_path = chunked_path
 
     def chunk(self, input_file):
         """input file format은 attardi/wikiextractor에 나온 형태를 따릅니다."""
@@ -50,8 +51,9 @@ class DataChunk:
         return orig_text, chunk_list
 
     def chunk_and_save_orig_passage(
-        self, input_file, passage_path="../data/processed_passages", chunk_size=100
+        self, input_file, chunk_size=100
     ):
+        passage_path = self.chunked_path
         os.makedirs(passage_path, exist_ok=True)
         idx = 0
         orig_text, chunk_list = self.chunk(input_file)

@@ -22,12 +22,14 @@ class Semantic(Retrieval):
         indexer_type: str = "DenseFlatIndexer",
         data_path: Optional[str] = "../data/",
         context_path: Optional[str] = "wiki_docs.csv", #"wiki_documents_original.csv",
-        index_output: Optional[str] = "../data/2050iter_flat"
+        index_output_path: Optional[str] = "../data/2050iter_flat",
+        chunked_path: Optional[str] = "../data/processed_passages",
     ):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.data_path = data_path
         self.context_path = context_path
-        self.index_output = index_output
+        self.index_output_path = index_output_path
+        self.chunked_path = chunked_path
         self.indexer_type = indexer_type
         self.indexer = None
         self.dense_model_name = dense_model_name
@@ -40,16 +42,18 @@ class Semantic(Retrieval):
 
     def get_dense_embedding_with_faiss(self, question=None, contexts=None, batch_size=64):
         self.indexer = getattr(retrieval_tasks.indexers, self.indexer_type)()
-        if self.indexer.index_exists(self.index_output):
-            self.indexer.init_index(self.dense_embeder.pooler.dense.out_features)
-            self.indexer.deserialize(self.index_output)
+        self.indexer.init_index(self.dense_embeder.pooler.dense.out_features)
+        if self.indexer.index_exists(self.index_output_path):
+            self.indexer.deserialize(self.index_output_path)
         else:
             IndexRunner(
                 encoder=self.dense_embeder,
                 tokenizer=self.dense_tokenize_fn,
                 data_dir=os.path.join(self.data_path, self.context_path),
                 indexer_type=self.indexer_type,
-                index_output=self.index_output,
+                index_output_path=self.index_output_path,
+                chunked_path=self.chunked_path,
+                indexer=self.indexer
             ).run()
 
     def retrieve(self, query_or_dataset, topk: Optional[int] = 1, alpha: Optional[float] = 0, no_sparse: bool = True):

@@ -17,7 +17,7 @@ def len_of_tokens(tokenizer, context):
 
 def len_of_chat_template(tokenizer, custom_args: CustomArguments):
     message = [
-                {"role": "system", "content": custom_args.rag_System_prompt},
+                {"role": "system", "content": custom_args.rag_system_prompt},
                 {"role": "user", "content": ""},
                 {"role": "assistant", "content": ""}
             ]

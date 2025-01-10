@@ -128,7 +128,9 @@ def main(run_name, debug=False):
 
     if custom_args.do_rag:
         retriever = Semantic(
-            dense_model_name=custom_args.dense_model_name
+            dense_model_name=custom_args.dense_model_name,
+            index_output_path=os.path.join(custom_args.rag_dataset_path, custom_args.faiss_index_output_path),
+            chunked_path=custom_args.faiss_chunk_path
         )
         retriever.get_dense_embedding_with_faiss()
         # dense_model_name = []

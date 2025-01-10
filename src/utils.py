@@ -197,7 +197,7 @@ def train_df_to_process_df_with_rag(
             {
                 "id": dataset[i]["id"],
                 "messages": [
-                    {"role": "system", "content": custom_args.rag_System_prompt},
+                    {"role": "system", "content": custom_args.rag_system_prompt},
                     {"role": "user", "content": user_message},
                     {"role": "assistant", "content": f"{dataset[i]['answer']}"}
                 ],
@@ -277,7 +277,7 @@ def test_df_to_process_df_with_rag(
             {
                 "id": row["id"],
                 "messages": [
-                    {"role": "system", "content": custom_args.rag_System_prompt},
+                    {"role": "system", "content": custom_args.rag_system_prompt},
                     {"role": "user", "content": user_message},
                 ],
                 "label": row["answer"],

@@ -174,7 +174,19 @@ class CustomArguments:
             "help": "contexts for RAG"
         }
     )
-    rag_System_prompt : Optional[str] = field(
+    faiss_index_output_path : Optional[str] = field(
+        default="2050iter_flat", 
+        metadata={
+            "help": "index of dpr for faiss"
+        }
+    )
+    faiss_chunk_path : Optional[str] = field(
+        default="../data/processed_passages", 
+        metadata={
+            "help": "chunked contexts for RAG"
+        }
+    )
+    rag_system_prompt : Optional[str] = field(
         default="지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요.",
         metadata={
             "help": "system prompt for RAG"

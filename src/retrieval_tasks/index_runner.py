@@ -2,6 +2,7 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from transformers import BertModel
 import transformers
+from typing import List, Optional, Tuple, NoReturn
 
 transformers.logging.set_verbosity_error()  # 토크나이저 초기화 관련 warning suppress
 from tqdm import tqdm
@@ -10,6 +11,7 @@ import logging
 from typing import List, Tuple
 
 import retrieval_tasks.indexers
+from retrieval_tasks.indexers import DenseIndexer
 from .chunk_data import DataChunk
 from .utils import get_wiki_filepath, wiki_worker_init
 
@@ -74,8 +76,10 @@ class IndexRunner:
         chunk_size: int = 100,
         batch_size: int = 64,
         buffer_size: int = 50000,
-        index_output: str = "",
+        index_output_path: str = "",
+        chunked_path: str = "",
         device: str = "cuda:0",
+        indexer: Optional[DenseIndexer] = None,
     ):
         """
         data_dir : 인덱싱할 한국어 wiki 데이터가 들어있는 디렉토리입니다. 하위에 AA, AB와 같은 디렉토리가 있습니다.
@@ -95,7 +99,8 @@ class IndexRunner:
         self.encoder = encoder
         self.tokenizer = tokenizer
         self.encoder_emb_sz = self.encoder.pooler.dense.out_features # get cls token dim
-        self.indexer = getattr(retrieval_tasks.indexers, indexer_type)()
+        self.indexer = getattr(retrieval_tasks.indexers, indexer_type)() if indexer is None else indexer
+        self.chunked_path = chunked_path
         self.chunk_size = chunk_size
         self.batch_size = batch_size
         self.buffer_size = buffer_size
@@ -106,13 +111,14 @@ class IndexRunner:
             chunk_size,
             batch_size,
             worker_init_fn=None,
+            chunked_path=self.chunked_path
         )
         self.indexer.init_index(self.encoder_emb_sz)
-        self.index_output = index_output if index_output else indexer_type
+        self.index_output_path = index_output_path if index_output_path else indexer_type
 
     @staticmethod
-    def get_loader(tokenizer, wiki_files, chunk_size, batch_size, worker_init_fn=None):
-        chunker = DataChunk(chunk_size=chunk_size, tokenizer=tokenizer)
+    def get_loader(tokenizer, wiki_files, chunk_size, batch_size, worker_init_fn=None, chunked_path: str = ""):
+        chunker = DataChunk(chunk_size=chunk_size, tokenizer=tokenizer, chunked_path=chunked_path)
         ds = torch.utils.data.ChainDataset(
             tuple(WikiArticleStream(path, chunker) for path in wiki_files)
         )
@@ -150,8 +156,8 @@ class IndexRunner:
             logger.info(f"perform indexing... {len(_to_index)} added")
             self.indexer.index_data(_to_index)
             _to_index = []
-        os.makedirs(self.index_output, exist_ok=True)
-        self.indexer.serialize(self.index_output) 
+        os.makedirs(self.index_output_path, exist_ok=True)
+        self.indexer.serialize(self.index_output_path) 
         # 임베딩된 값을 파일로 저장
         # 일반적으로 Faiss는 메모리만을 사용해서 동작하여 필요 없을 수도 있으나 
         # DenseHNSWFlatIndexer DenseHNSWSQIndexer 등은 DenseFlatIndexer와 다르게 램과 디스크 둘 다 활용 가능하여 미리 저장
