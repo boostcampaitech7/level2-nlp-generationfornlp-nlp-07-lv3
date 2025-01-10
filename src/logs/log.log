@@ -14604,3 +14604,288 @@ Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올
 [2025-01-10 07:01:16,420 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
 [2025-01-10 07:05:51,126 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=None, shell=False, universal_newlines=False)
 [2025-01-10 07:05:52,153 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'cat-file', '--batch-check'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=<valid stream>, shell=False, universal_newlines=False)
+[2025-01-10 07:05:56,848 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] model is from Qwen/Qwen2.5-32B-Instruct
+[2025-01-10 07:05:56,848 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
+[2025-01-10 07:05:56,932 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:05:57,297 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:06:19,361 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 07:07:01,421 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 07:07:01,695 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:07:02,241 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:07:03,564 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:07:03,816 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 07:07:03,903 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:07:09,500 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loading index from ../data/2050iter_flat
+[2025-01-10 07:07:09,588 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loaded index of type <class 'faiss.swigfaiss_avx512.IndexFlatIP'> and size 41250
+[2025-01-10 07:07:09,613 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:07:09,617 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:07:09,620 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:07:09,622 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:07:09,625 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:07:09,629 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [max_response_tokens error] max_response_tokens를 초과함
+[2025-01-10 07:07:09,632 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 07:07:09,632 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:07:09,634 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:07:09,634 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG가 필요한가?] 필요함
+[2025-01-10 07:07:09,830 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12404]
+[2025-01-10 07:07:09,830 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12404
+[2025-01-10 07:07:09,830 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12418]
+[2025-01-10 07:07:09,830 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12418
+[2025-01-10 07:07:09,830 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] [Search query] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:07:09,870 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:07:10,101 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:07:10,343 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:07:10,346 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:07:11,020 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
+[2025-01-10 07:07:11,146 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 200 47
+[2025-01-10 07:07:11,147 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:07:11,213 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://o151352.ingest.sentry.io:443 "POST /api/4504800232407040/envelope/ HTTP/1.1" 200 None
+[2025-01-10 07:07:11,958 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "GET /call/run/49e8c321378640b08a96eeba224d543d HTTP/1.1" 200 None
+[2025-01-10 07:07:13,410 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:07:13,636 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:07:13,888 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:07:14,077 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors.index.json HTTP/1.1" 404 0
+[2025-01-10 07:07:14,270 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors HTTP/1.1" 302 0
+[2025-01-10 07:13:54,315 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=None, shell=False, universal_newlines=False)
+[2025-01-10 07:13:55,343 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'cat-file', '--batch-check'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=<valid stream>, shell=False, universal_newlines=False)
+[2025-01-10 07:14:00,086 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] model is from Qwen/Qwen2.5-32B-Instruct
+[2025-01-10 07:14:00,086 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
+[2025-01-10 07:14:00,170 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:14:00,419 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:14:22,708 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 07:15:04,686 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 07:15:05,008 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:15:05,571 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:15:06,971 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:15:07,328 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 07:15:07,414 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:15:12,786 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loading index from ../data/2050iter_flat
+[2025-01-10 07:15:12,877 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loaded index of type <class 'faiss.swigfaiss_avx512.IndexFlatIP'> and size 41250
+[2025-01-10 07:15:12,903 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:15:12,906 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:15:12,909 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:15:12,911 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:15:12,913 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 07:15:12,914 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:15:12,918 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [max_response_tokens error] max_response_tokens를 초과함
+[2025-01-10 07:15:12,922 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:15:12,923 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:15:12,923 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG가 필요한가?] 필요함
+[2025-01-10 07:15:13,120 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12404]
+[2025-01-10 07:15:13,121 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12404
+[2025-01-10 07:15:13,121 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12418]
+[2025-01-10 07:15:13,121 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12418
+[2025-01-10 07:15:13,121 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] [Search query] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:15:13,188 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:15:13,399 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:15:13,642 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:15:13,645 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:15:14,637 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 503 58
+[2025-01-10 07:15:15,270 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
+[2025-01-10 07:15:56,737 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=None, shell=False, universal_newlines=False)
+[2025-01-10 07:15:57,766 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'cat-file', '--batch-check'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=<valid stream>, shell=False, universal_newlines=False)
+[2025-01-10 07:16:02,462 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] model is from Qwen/Qwen2.5-32B-Instruct
+[2025-01-10 07:16:02,462 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
+[2025-01-10 07:16:02,552 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:16:02,935 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:16:24,966 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 07:17:07,320 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 07:17:07,590 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:17:08,508 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:17:09,913 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:17:10,215 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 07:17:10,297 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:17:15,764 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loading index from ../data/2050iter_flat
+[2025-01-10 07:17:15,800 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 07:17:15,852 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loaded index of type <class 'faiss.swigfaiss_avx512.IndexFlatIP'> and size 41250
+[2025-01-10 07:17:15,877 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:17:15,880 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:17:15,883 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:17:15,886 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:17:15,889 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:17:15,893 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [max_response_tokens error] max_response_tokens를 초과함
+[2025-01-10 07:17:15,896 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:17:15,898 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:17:15,898 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG가 필요한가?] 필요함
+[2025-01-10 07:17:16,064 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:17:16,097 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12404]
+[2025-01-10 07:17:16,097 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12404
+[2025-01-10 07:17:16,097 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12418]
+[2025-01-10 07:17:16,097 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12418
+[2025-01-10 07:17:16,098 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] [Search query] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:17:16,281 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:17:16,529 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:17:16,532 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:17:17,459 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 200 47
+[2025-01-10 07:17:17,461 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:17:17,640 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
+[2025-01-10 07:17:18,233 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "GET /call/run/aeef0f015241434a83b9562f73ef14a5 HTTP/1.1" 200 None
+[2025-01-10 07:17:19,786 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:17:20,021 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:17:20,264 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:17:20,470 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors.index.json HTTP/1.1" 404 0
+[2025-01-10 07:17:20,700 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/refs%2Fpr%2F71/model.safetensors HTTP/1.1" 302 0
+[2025-01-10 07:19:09,149 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=None, shell=False, universal_newlines=False)
+[2025-01-10 07:19:10,179 | execute @ /opt/conda/lib/python3.10/site-packages/git/cmd.py] Popen(['git', 'cat-file', '--batch-check'], cwd=/data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3, stdin=<valid stream>, shell=False, universal_newlines=False)
+[2025-01-10 07:19:14,927 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] model is from Qwen/Qwen2.5-32B-Instruct
+[2025-01-10 07:19:14,927 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
+[2025-01-10 07:19:15,013 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:19:20,307 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:19:42,333 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 07:20:24,498 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 07:20:29,507 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:20:30,073 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 07:20:31,374 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 07:20:31,626 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 07:20:31,712 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 07:20:32,155 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 07:20:32,415 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 07:20:32,653 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 07:20:32,920 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 07:20:32,924 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 07:20:33,848 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 503 58
+[2025-01-10 07:20:34,803 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loading index from ../data/2050iter_flat
+[2025-01-10 07:20:34,887 | deserialize @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/indexers.py] Loaded index of type <class 'faiss.swigfaiss_avx512.IndexFlatIP'> and size 41250
+[2025-01-10 07:20:34,910 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:20:34,913 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:20:34,916 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:20:34,918 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:20:34,921 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:20:34,925 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [max_response_tokens error] max_response_tokens를 초과함
+[2025-01-10 07:20:34,928 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [rag_response_threshold error] rag_response_threshold를 초과함
+[2025-01-10 07:20:34,930 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:20:34,930 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieve.py] [RAG가 필요한가?] 필요함
+[2025-01-10 07:20:35,100 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12404]
+[2025-01-10 07:20:35,100 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12404
+[2025-01-10 07:20:35,100 | get_passage_file @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/utils.py] No file found for passage IDs: [12418]
+[2025-01-10 07:20:35,100 | get_relevant_doc_with_faiss @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] 올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for 12418
+[2025-01-10 07:20:35,101 | retrieve @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/retrieval_tasks/retrieval_semantic.py] [Search query] 참고문서:
+None
+
+지문:
+Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올라가고 심장 박동이 빨라지며 체온이 상승했습니다. 그녀는 지금 교통체증에 걸려서 화가 났습니다. 어제 그 약을 먹었을 때는 남편과 함께 있었는데, 혈압이 올라가고 심장 박동이 빨라지며 몸에 열이나기 시작하자 갑자기 성욕을 느꼈습니다.
+
+질문:
+이 설명은 다음을 예시하고 있습니다.
+
+선택지:
+1 - 적응수준 현상
+2 - 2요인 이론
+3 - 제임스-랑게(James-Lange) 이론
+4 - 캐논-바드(Cannon-Bard) 이론
+
+1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+정답:
+[2025-01-10 07:20:37,099 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
