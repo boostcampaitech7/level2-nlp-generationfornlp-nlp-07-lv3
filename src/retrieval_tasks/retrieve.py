@@ -9,6 +9,8 @@ from .LLM_tasks import llm_check, llm_summary
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import BitsAndBytesConfig
 
+logging.basicConfig(level=logging.INFO)
+
 def len_of_tokens(tokenizer, context):
     tokens = tokenizer.tokenize(context)
     return len(tokens)

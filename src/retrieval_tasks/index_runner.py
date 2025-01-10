@@ -15,11 +15,11 @@ from .utils import get_wiki_filepath, wiki_worker_init
 
 # logger basic config
 os.makedirs("logs", exist_ok=True)
-logging.basicConfig(
-    filename="logs/log.log",
-    level=logging.DEBUG,
-    format="[%(asctime)s | %(funcName)s @ %(pathname)s] %(message)s",
-)
+# logging.basicConfig(
+#     filename="logs/log.log",
+#     level=logging.DEBUG,
+#     format="[%(asctime)s | %(funcName)s @ %(pathname)s] %(message)s",
+# )
 logger = logging.getLogger()
 
 

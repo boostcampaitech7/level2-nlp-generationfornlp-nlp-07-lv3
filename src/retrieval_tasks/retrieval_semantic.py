@@ -59,7 +59,7 @@ class Semantic(Retrieval):
             doc_scores, doc_contexts = self.get_relevant_doc_with_faiss(query_or_dataset, alpha, k=topk)
             logging.info(f"[Search query] {query_or_dataset}")
 
-            return (doc_scores, [doc_contexts[i] for i in range(topk)])
+            return (doc_scores, doc_contexts)
 
         elif isinstance(query_or_dataset, Dataset):
             total = []

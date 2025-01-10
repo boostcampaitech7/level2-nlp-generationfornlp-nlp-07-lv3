@@ -55,6 +55,7 @@ def main(run_name, debug=False):
         format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
+        level=logging.INFO
     )
 
     logging.info(f"model is from {model_args.model_name_or_path}")
