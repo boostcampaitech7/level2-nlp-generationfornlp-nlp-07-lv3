@@ -1,6 +1,7 @@
 import torch
 import logging
 import os
+import pickle
 from transformers import AutoModel, AutoTokenizer
 from typing import List, Optional, Tuple, NoReturn
 

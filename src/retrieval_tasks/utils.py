@@ -28,7 +28,7 @@ def get_passage_file(p_id_list: typing.List[int]) -> str:
     p_id_max = max(p_id_list)
     p_id_min = min(p_id_list)
     for f in glob("../data/processed_passages/*.p"):
-        s, e = f.split("/")[1].split(".")[0].split("-")
+        s, e = f.split("/")[-1].split(".")[0].split("-")
         s, e = int(s), int(e)
         if p_id_min >= s and p_id_max <= e:
             target_file = f
