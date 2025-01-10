@@ -145,7 +145,7 @@ class CustomArguments:
         },
     )
     peft_base : Optional[str] = field(
-        default='beomi/gemma-ko-2b',
+        default='Qwen/Qwen2.5-32B-Instruct',
         metadata={
             "help": "peft base model"
         },
