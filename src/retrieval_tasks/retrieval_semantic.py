@@ -54,22 +54,22 @@ class Semantic(Retrieval):
         assert self.dense_embeder is not None, "You should first execute `get_dense_embedding()`"
 
         if isinstance(query_or_dataset, str):
-            doc_scores, doc_indices = self.get_relevant_doc_with_faiss(query_or_dataset, alpha, k=topk)
+            doc_scores, doc_contexts = self.get_relevant_doc_with_faiss(query_or_dataset, alpha, k=topk)
             logging.info(f"[Search query] {query_or_dataset}")
 
-            return (doc_scores, [self.contexts[doc_indices[i]] for i in range(topk)])
+            return (doc_scores, [doc_contexts[i] for i in range(topk)])
 
         elif isinstance(query_or_dataset, Dataset):
             total = []
             with timer("query exhaustive search"):
-                doc_scores, doc_indices = self.get_relevant_doc_bulk_with_faiss(
+                doc_scores, doc_contexts = self.get_relevant_doc_bulk_with_faiss(
                     query_or_dataset["question"], alpha, k=topk, no_sparse=no_sparse
                 )
             for idx, example in enumerate(tqdm(query_or_dataset, desc="[Hybrid retrieval] ")):
                 tmp = {
                     "question": example["question"],
                     "id": example["id"],
-                    "context": " ".join([self.contexts[pid] for pid in doc_indices[idx]]),
+                    "context": " ".join([context for context in doc_contexts[idx]]),
                 }
                 if "context" in example.keys() and "answers" in example.keys():
                     tmp["original_context"] = example["context"]
@@ -91,7 +91,8 @@ class Semantic(Retrieval):
         if self.indexer is not None:
             result = self.indexer.search_knn(query_vectors=sentence_embeddings.cpu().numpy(), top_docs=k)
             passages = []
-            for idx, _ in zip(*result[0]): # idx, sim
+            scores = []
+            for idx, sim in zip(*result[0]): # idx, sim
                 path = get_passage_file([idx])
                 if not path:
                     logging.debug(f"올바른 경로에 피클화된 위키피디아가 있는지 확인하세요.No single passage path for {idx}")
@@ -99,7 +100,8 @@ class Semantic(Retrieval):
                 with open(path, "rb") as f:
                     passage_dict = pickle.load(f)
                 passages.append(passage_dict[idx])
-            return passages
+                scores.append(sim)
+            return scores, passages
         else:
             raise ValueError("Indexer is None.")
 

@@ -49,8 +49,18 @@ class DataChunk:
                 chunk_list.append(chunk)
         return orig_text, chunk_list
 
+    def chunk_and_save_orig_passage(
+        input_file, passage_path="../data/processed_passages", chunk_size=100
+    ):
+        os.makedirs(passage_path, exist_ok=True)
+        idx = 0
+        orig_text, chunk_list = self.chunk(input_file)
+        to_save = {idx + i: ret[i] for i in range(len(orig_text))}
+        with open(f"{passage_path}/{idx}-{idx+len(orig_text)-1}.p", "wb") as f:
+            pickle.dump(to_save, f)
+        return orig_text, chunk_list
 
-def save_orig_passage(
+def save_orig_passage_bulk(
     input_path="text", passage_path="processed_passages", chunk_size=100
 ):
     """store original passages with unique id"""
