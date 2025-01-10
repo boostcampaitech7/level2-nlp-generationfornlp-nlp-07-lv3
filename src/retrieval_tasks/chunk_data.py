@@ -55,7 +55,7 @@ class DataChunk:
         os.makedirs(passage_path, exist_ok=True)
         idx = 0
         orig_text, chunk_list = self.chunk(input_file)
-        to_save = {idx + i: ret[i] for i in range(len(orig_text))}
+        to_save = {idx + i: orig_text[i] for i in range(len(orig_text))}
         with open(f"{passage_path}/{idx}-{idx+len(orig_text)-1}.p", "wb") as f:
             pickle.dump(to_save, f)
         return orig_text, chunk_list

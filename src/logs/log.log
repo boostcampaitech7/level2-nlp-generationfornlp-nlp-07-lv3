@@ -11961,3 +11961,17 @@ Susan은 오늘 알레르기 약을 복용했는데, 이로 인해 혈압이 올
 [2025-01-10 06:52:38,010 | main @ /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/src/main.py] data is from /data/ephemeral/level2-nlp-generationfornlp-nlp-07-lv3/data/train.csv
 [2025-01-10 06:52:38,096 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
 [2025-01-10 06:52:38,300 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 06:53:00,461 | get_balanced_memory @ /opt/conda/lib/python3.10/site-packages/accelerate/utils/modeling.py] We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+[2025-01-10 06:53:42,437 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/generation_config.json HTTP/1.1" 200 0
+[2025-01-10 06:53:42,720 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /Qwen/Qwen2.5-32B-Instruct/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 06:53:43,280 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+[2025-01-10 06:53:44,628 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/config.json HTTP/1.1" 200 0
+[2025-01-10 06:53:44,883 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "HEAD /BAAI/bge-m3/resolve/main/model.safetensors HTTP/1.1" 404 0
+[2025-01-10 06:53:44,971 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): huggingface.co:443
+[2025-01-10 06:53:50,334 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3 HTTP/1.1" 200 5204
+[2025-01-10 06:53:50,569 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/main HTTP/1.1" 200 9525
+[2025-01-10 06:53:51,133 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/discussions?p=0 HTTP/1.1" 200 26871
+[2025-01-10 06:53:51,371 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://huggingface.co:443 "GET /api/models/BAAI/bge-m3/commits/refs%2Fpr%2F71 HTTP/1.1" 200 10490
+[2025-01-10 06:53:51,374 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): safetensors-convert.hf.space:443
+[2025-01-10 06:53:52,390 | _make_request @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] https://safetensors-convert.hf.space:443 "POST /call/run HTTP/1.1" 503 58
+[2025-01-10 06:54:27,204 | _new_conn @ /opt/conda/lib/python3.10/site-packages/urllib3/connectionpool.py] Starting new HTTPS connection (1): o151352.ingest.sentry.io:443
