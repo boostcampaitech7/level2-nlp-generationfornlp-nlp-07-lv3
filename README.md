@@ -154,8 +154,12 @@ CSAT-Solver/
 │       ├── __init__.py
 │       ├── LLM_tasks.py          # LLM을 활용한 파이프라인 중의 요약 및 확인 task
 │       ├── retrieval.py          # 리트리버 공통 추상 클래스
-│       ├── retrieval_semantic.py # Dense 
+│       ├── retrieval_semantic.py # Dense, Faiss 
 │       ├── retrieval_syntactic.py # Sparse
+│       ├── retrieval_elastic.py # Elastic Search
+│       ├── chunk_data.py # chunking data (Faiss)
+│       ├── index_runner.py # indexing chunked data (Faiss)
+│       ├── indexers.py # Indexers (Faiss) 
 │       ├── retrieval_hybrid.py   # 하이브리드 서치 
 │       ├── retrieval_rerank.py   # two-stage reranker 
 │       └── retrieve_utils.py     # RAG 기반 검색·요약 파이프라인
