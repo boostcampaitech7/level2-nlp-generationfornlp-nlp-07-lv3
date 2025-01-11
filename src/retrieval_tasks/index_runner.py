@@ -145,7 +145,7 @@ class IndexRunner:
                 _to_index += [(cur + i, _emb) for i, _emb in enumerate(p_emb.cpu().numpy())]
                 cur += p_emb.size(0)
             except Exception as e:
-                logger.info("p_emb Object doesn't have .cpu()")
+                logger.info("p_emb Object doesn't have .cpu()!")
                 _to_index += [(cur + i, _emb) for i, _emb in enumerate(p_emb.pooler_output.cpu().numpy())]
                 cur += p_emb.pooler_output.size(0)
             # if len(_to_index) > self.buffer_size - self.batch_size:
