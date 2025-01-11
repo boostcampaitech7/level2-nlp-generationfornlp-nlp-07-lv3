@@ -71,7 +71,7 @@ class Semantic(Retrieval):
                 doc_scores, doc_contexts = self.get_relevant_doc_bulk_with_faiss(
                     query_or_dataset["question"], alpha, k=topk, no_sparse=no_sparse
                 )
-            for idx, example in enumerate(tqdm(query_or_dataset, desc="[Hybrid retrieval] ")):
+            for idx, example in enumerate(tqdm(query_or_dataset, desc="[Semantic retrieval] ")):
                 tmp = {
                     "question": example["question"],
                     "id": example["id"],
