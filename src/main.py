@@ -16,7 +16,10 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 from tqdm import tqdm
 
 from arguments import ModelArguments, DataTrainingArguments, CustomArguments
-from retrieval_tasks.retrieval_hybrid import HybridSearch
+from retrieval_tasks import HybridSearch
+from retrieval_tasks import Reranker
+from retrieval_tasks import Semantic
+from retrieval_tasks import Syntactic
 from utils import (record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model, apply_lora,
                    train_df_to_process_df_with_rag, test_df_to_process_df_with_rag)
 
@@ -26,7 +29,8 @@ parent_dir = os.path.dirname(os.getcwd())
 now = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
 
 pd.set_option('display.max_columns', None)
-os.environ["WANDB_MODE"] = "offline"
+# os.environ["WANDB_MODE"] = "offline"
+os.environ["WANDB_MODE"] = "disabled"
 logger = logging.getLogger(__name__)
 
 def main(run_name, debug=False):
@@ -42,17 +46,18 @@ def main(run_name, debug=False):
     plus_prompt_rag, no_plus_prompt_rag = custom_args.prompt_question_plus_rag, custom_args.prompt_no_question_plus_rag
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
-    wandb.init(
-        project="CSAT-Solver",
-        entity="NotyNoty",
-        name=f"{project_prefix}_{run_name}",
-        save_code=True,
-    )
+    # wandb.init(
+    #     project="CSAT-Solver",
+    #     entity="NotyNoty",
+    #     name=f"{project_prefix}_{run_name}",
+    #     save_code=True,
+    # )
 
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
+        level=logging.INFO
     )
 
     logging.info(f"model is from {model_args.model_name_or_path}")
@@ -61,7 +66,7 @@ def main(run_name, debug=False):
     # Load data
     dataset = pd.read_csv(data_args.dataset_name)
     dataset = dataset.sample(10, random_state=SEED).reset_index(drop=True) if debug else dataset
-    dataset.to_csv(parent_dir, 'data', f"sampled_dataset_{now}.csv") if debug else None
+    dataset.to_csv(os.path.join(parent_dir, 'data', f"sampled_dataset_{now}.csv")) if debug else None
 
     df = record_to_df(dataset)
 
@@ -124,16 +129,54 @@ def main(run_name, debug=False):
         model = apply_lora(model, adaptor)
 
     if custom_args.do_rag:
-            dense_model_name = []
-            dense_model_name.append(custom_args.dense_model_name)
-            retriever = HybridSearch(
-                        tokenize_fn=tokenizer.tokenize,
-                        dense_model_name=dense_model_name,
-                        data_path=custom_args.rag_dataset_path,
-                        context_path=custom_args.rag_context_path,
-                    )
-            retriever.get_dense_embedding()
-            retriever.get_sparse_embedding()
+        step_1_retriever = Syntactic(
+            tokenize_fn=tokenizer,
+            vectorizer_type="bm25" #"tfidf" 
+        )
+        step_1_retriever.get_sparse_embedding()
+
+        step_2_retriever = Semantic(
+            dense_model_name=custom_args.dense_model_name,
+            index_output_path=os.path.join(custom_args.rag_dataset_path, custom_args.faiss_index_output_path),
+            chunked_path=custom_args.faiss_chunk_path
+        )
+        # step_2_retriever.get_dense_embedding()
+        step_2_retriever.get_dense_embedding_with_faiss()
+
+        retriever = Reranker(
+            step1_model=step_1_retriever,
+            step2_model=step_2_retriever,
+        )
+
+        # retriever = HybridSearch(
+        #     tokenize_fn=tokenizer,
+        #     step1_model=step_1_retriever,
+        #     step2_model=step_2_retriever,
+        # )
+
+        # retriever = Syntactic(
+        #     tokenize_fn=tokenizer,
+        #     vectorizer_type="bm25" #"tfidf" 
+        # )
+        # retriever.get_sparse_embedding()
+
+        # retriever = Semantic(
+        #     dense_model_name=custom_args.dense_model_name,
+        #     index_output_path=os.path.join(custom_args.rag_dataset_path, custom_args.faiss_index_output_path),
+        #     chunked_path=custom_args.faiss_chunk_path
+        # )
+        # retriever.get_dense_embedding_with_faiss()
+
+        # dense_model_name = []
+        # dense_model_name.append(custom_args.dense_model_name)
+        # retriever = HybridSearch(
+        #             tokenize_fn=tokenizer.tokenize,
+        #             dense_model_name=dense_model_name,
+        #             data_path=custom_args.rag_dataset_path,
+        #             context_path=custom_args.rag_context_path,
+        #         )
+        # retriever.get_dense_embedding()
+        # retriever.get_sparse_embedding()
 
     dataset = Dataset.from_pandas(df)
     if not custom_args.do_rag:
@@ -237,7 +280,7 @@ def main(run_name, debug=False):
                 max_seq_length=data_args.max_seq_length,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=10,
+                num_train_epochs=1,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
@@ -245,7 +288,7 @@ def main(run_name, debug=False):
                 #eval_strategy="epoch",
                 save_total_limit=1,
                 save_only_model=True,
-                report_to="wandb",
+                # report_to="wandb",
                 gradient_checkpointing=custom_args.gc_flag,  # 그래디언트 체크포인팅 활성화
             )
 

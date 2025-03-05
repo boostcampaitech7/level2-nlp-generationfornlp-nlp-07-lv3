@@ -17,7 +17,7 @@ class ModelArguments:
     """
     model_name_or_path: str = field(
         #default='beomi/gemma-ko-2b',
-        default='Qwen/Qwen2.5-32B-Instruct',
+        default="Qwen/Qwen2.5-0.5B-Instruct",
     )
     train_test_split: Optional[float] = field(
         default=0.3,
@@ -107,7 +107,7 @@ class CustomArguments:
         },
     )
     peft_config : Optional[LoraConfig] = field(
-        default=LoraConfig(
+        default_factory=lambda: LoraConfig(
             r=6,
             lora_alpha=8,
             lora_dropout=0.05,
@@ -120,7 +120,7 @@ class CustomArguments:
         },
     )
     quant_4_bit_config : Optional[BitsAndBytesConfig] = field(
-        default=BitsAndBytesConfig(
+        default_factory=lambda: BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_use_double_quant=True,
@@ -131,7 +131,7 @@ class CustomArguments:
         },
     )
     quant_8_bit_config : Optional[BitsAndBytesConfig] = field(
-        default=BitsAndBytesConfig(
+        default_factory=lambda: BitsAndBytesConfig(
             load_in_8bit=True,
         ),
         metadata={
@@ -145,7 +145,7 @@ class CustomArguments:
         },
     )
     peft_base : Optional[str] = field(
-        default='beomi/gemma-ko-2b',
+        default="Qwen/Qwen2.5-0.5B-Instruct",
         metadata={
             "help": "peft base model"
         },
@@ -157,7 +157,7 @@ class CustomArguments:
         },
     )
     dense_model_name : Optional[str] = field(
-        default='intfloat/multilingual-e5-large-instruct',
+        default='BAAI/bge-m3', #intfloat/multilingual-e5-large-instruct',
         metadata={
             "help": "dense embedding models"
         }
@@ -169,12 +169,24 @@ class CustomArguments:
         }
     )
     rag_context_path : Optional[str] = field(
-        default="wiki_documents_original.csv", 
+        default="wiki_docs.csv", #"wiki_documents_original.csv", 
         metadata={
             "help": "contexts for RAG"
         }
     )
-    rag_System_prompt : Optional[str] = field(
+    faiss_index_output_path : Optional[str] = field(
+        default="2050iter_flat", 
+        metadata={
+            "help": "index of dpr for faiss"
+        }
+    )
+    faiss_chunk_path : Optional[str] = field(
+        default="../data/processed_passages", 
+        metadata={
+            "help": "chunked contexts for RAG"
+        }
+    )
+    rag_system_prompt : Optional[str] = field(
         default="지문을 읽고 참고문서를 참고하여 질문의 답을 구하세요.",
         metadata={
             "help": "system prompt for RAG"
@@ -200,7 +212,7 @@ class CustomArguments:
     )
     rag_response_threshold : Optional[int] = field(
         default=350,
-        metadat={
+        metadata={
             "help": "length of rag response threshold"
         },
     )

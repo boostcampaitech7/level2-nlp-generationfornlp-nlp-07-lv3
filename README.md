@@ -1,4 +1,4 @@
-# CSAT-Solver Project (수능형 문제 풀이 모델)
+# CSAT-Solver Project  (수능형 문제 풀이 모델)
 
 ## 대회 소개
 `CSAT-Solver`는 고급 언어 모델을 사용하여 한국의 대학수학능력시험 문제를 해결하기 위해 설계된 프로젝트입니다. 이 프로젝트는 대규모 언어 모델에 미세 조정 기법을 적용하여 CSAT의 전형적인 객관식 문제에 대한 성능을 향상시킵니다.
@@ -154,8 +154,11 @@ CSAT-Solver/
 │       ├── __init__.py
 │       ├── LLM_tasks.py          # LLM을 활용한 파이프라인 중의 요약 및 확인 task
 │       ├── retrieval.py          # 리트리버 공통 추상 클래스
-│       ├── retrieval_semantic.py # Dense 
+│       ├── retrieval_semantic.py # Dense, Faiss 
 │       ├── retrieval_syntactic.py # Sparse
+│       ├── chunk_data.py # chunking data (Faiss)
+│       ├── index_runner.py # indexing chunked data (Faiss)
+│       ├── indexers.py # Indexers (Faiss) 
 │       ├── retrieval_hybrid.py   # 하이브리드 서치 
 │       ├── retrieval_rerank.py   # two-stage reranker 
 │       └── retrieve_utils.py     # RAG 기반 검색·요약 파이프라인
