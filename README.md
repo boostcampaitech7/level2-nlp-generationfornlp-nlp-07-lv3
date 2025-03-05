@@ -156,7 +156,6 @@ CSAT-Solver/
 │       ├── retrieval.py          # 리트리버 공통 추상 클래스
 │       ├── retrieval_semantic.py # Dense, Faiss 
 │       ├── retrieval_syntactic.py # Sparse
-│       ├── retrieval_elastic.py # Elastic Search
 │       ├── chunk_data.py # chunking data (Faiss)
 │       ├── index_runner.py # indexing chunked data (Faiss)
 │       ├── indexers.py # Indexers (Faiss) 

@@ -17,7 +17,7 @@ class ModelArguments:
     """
     model_name_or_path: str = field(
         #default='beomi/gemma-ko-2b',
-        default='Qwen/Qwen2.5-32B-Instruct',
+        default="Qwen/Qwen2.5-0.5B-Instruct",
     )
     train_test_split: Optional[float] = field(
         default=0.3,
@@ -107,7 +107,7 @@ class CustomArguments:
         },
     )
     peft_config : Optional[LoraConfig] = field(
-        default=LoraConfig(
+        default_factory=lambda: LoraConfig(
             r=6,
             lora_alpha=8,
             lora_dropout=0.05,
@@ -120,7 +120,7 @@ class CustomArguments:
         },
     )
     quant_4_bit_config : Optional[BitsAndBytesConfig] = field(
-        default=BitsAndBytesConfig(
+        default_factory=lambda: BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_use_double_quant=True,
@@ -131,7 +131,7 @@ class CustomArguments:
         },
     )
     quant_8_bit_config : Optional[BitsAndBytesConfig] = field(
-        default=BitsAndBytesConfig(
+        default_factory=lambda: BitsAndBytesConfig(
             load_in_8bit=True,
         ),
         metadata={
@@ -145,7 +145,7 @@ class CustomArguments:
         },
     )
     peft_base : Optional[str] = field(
-        default='Qwen/Qwen2.5-32B-Instruct',
+        default="Qwen/Qwen2.5-0.5B-Instruct",
         metadata={
             "help": "peft base model"
         },

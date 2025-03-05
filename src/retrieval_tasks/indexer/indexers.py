@@ -1,7 +1,7 @@
 # Credit : facebookresearch/DPR
 
 """
- FAISS-based index components for dense retriever
+ FAISS-based/ElasticSearch-based index components for dense retriever
 """
 
 import faiss
@@ -13,7 +13,6 @@ import pickle
 from typing import List, Tuple
 
 logger = logging.getLogger()
-
 
 class DenseIndexer(object):
     def __init__(self, buffer_size: int = 50000):

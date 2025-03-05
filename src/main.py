@@ -19,6 +19,7 @@ from arguments import ModelArguments, DataTrainingArguments, CustomArguments
 from retrieval_tasks import HybridSearch
 from retrieval_tasks import Reranker
 from retrieval_tasks import Semantic
+from retrieval_tasks import Syntactic
 from utils import (record_to_df, train_df_to_process_df, test_df_to_process_df, set_seed, optimize_model, apply_lora,
                    train_df_to_process_df_with_rag, test_df_to_process_df_with_rag)
 
@@ -128,12 +129,44 @@ def main(run_name, debug=False):
         model = apply_lora(model, adaptor)
 
     if custom_args.do_rag:
-        retriever = Semantic(
+        step_1_retriever = Syntactic(
+            tokenize_fn=tokenizer,
+            vectorizer_type="bm25" #"tfidf" 
+        )
+        step_1_retriever.get_sparse_embedding()
+
+        step_2_retriever = Semantic(
             dense_model_name=custom_args.dense_model_name,
             index_output_path=os.path.join(custom_args.rag_dataset_path, custom_args.faiss_index_output_path),
             chunked_path=custom_args.faiss_chunk_path
         )
-        retriever.get_dense_embedding_with_faiss()
+        # step_2_retriever.get_dense_embedding()
+        step_2_retriever.get_dense_embedding_with_faiss()
+
+        retriever = Reranker(
+            step1_model=step_1_retriever,
+            step2_model=step_2_retriever,
+        )
+
+        # retriever = HybridSearch(
+        #     tokenize_fn=tokenizer,
+        #     step1_model=step_1_retriever,
+        #     step2_model=step_2_retriever,
+        # )
+
+        # retriever = Syntactic(
+        #     tokenize_fn=tokenizer,
+        #     vectorizer_type="bm25" #"tfidf" 
+        # )
+        # retriever.get_sparse_embedding()
+
+        # retriever = Semantic(
+        #     dense_model_name=custom_args.dense_model_name,
+        #     index_output_path=os.path.join(custom_args.rag_dataset_path, custom_args.faiss_index_output_path),
+        #     chunked_path=custom_args.faiss_chunk_path
+        # )
+        # retriever.get_dense_embedding_with_faiss()
+
         # dense_model_name = []
         # dense_model_name.append(custom_args.dense_model_name)
         # retriever = HybridSearch(
@@ -247,7 +280,7 @@ def main(run_name, debug=False):
                 max_seq_length=data_args.max_seq_length,
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
-                num_train_epochs=10,
+                num_train_epochs=1,
                 learning_rate=2e-5,
                 weight_decay=0.01,
                 logging_steps=200,
