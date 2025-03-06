@@ -1,6 +1,7 @@
 .idea
 *.pyc
 __pycache__
+logs
 wandb
 src/wandb
 
@@ -11,6 +12,7 @@ models/*
 !models/.gitkeep
 output/*
 !output/.gitkeep
+src/logs/*
 
 ensemble/ensemble_results/*
 !ensemble/ensemble_results/.gitkeep
