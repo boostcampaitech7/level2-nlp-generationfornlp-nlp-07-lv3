@@ -17,7 +17,7 @@ class ModelArguments:
     """
     model_name_or_path: str = field(
         #default='beomi/gemma-ko-2b',
-        default="Qwen/Qwen2.5-0.5B-Instruct",
+        default="Qwen/Qwen2.5-32B-Instruct",
     )
     train_test_split: Optional[float] = field(
         default=0.3,
@@ -145,7 +145,7 @@ class CustomArguments:
         },
     )
     peft_base : Optional[str] = field(
-        default="Qwen/Qwen2.5-0.5B-Instruct",
+        default="Qwen/Qwen2.5-32B-Instruct",
         metadata={
             "help": "peft base model"
         },
